@@ -82,11 +82,11 @@ def generate_post(post_meta,post_online=True) -> None:
 
 if __name__ == '__main__':
 
-	#run_remove_posts()
+	run_remove_posts()
 
-	#run_extract_stats()
+	run_extract_stats()
 
-	#run_download()
+	run_download()
 
 	post = choose_post()
 	generate_post(post,post_online=False)

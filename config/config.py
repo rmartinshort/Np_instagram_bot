@@ -26,7 +26,6 @@ INSTA_UNAME = 'inspiring_national_parks'
 INSTA_PASS = 'nationalparks'
 
 
-
-TAG_LINE_1 = "Inspirational Landscapes is a personal blog and not affiliated with the govenment"
+TAG_LINE_1 = "Inspirational Landscapes is a personal blog and not affiliated with the government"
 TAG_LINE_2 = "Please tag us in your posts for the chance to be featured!"
 TAG_LINE_3 = "Learn more and get the latest updates about national parks at www.nps.gov"
