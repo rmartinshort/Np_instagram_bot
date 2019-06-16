@@ -1,0 +1,11 @@
+numpy==1.15.4
+scikit-learn==0.20.2
+matplotlib==3.0.2
+pandas==0.23.4
+instabot-py==0.4.9
+instagram-private-api==1.6.0.0
+instagram-private-api-extensions==0.3.8
+instagram-scraper==1.5.41
+instaloader==4.2.8
+instapy-chromedriver==2.46
+instapy-cli==0.0.12
