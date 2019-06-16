@@ -6,6 +6,7 @@ import pandas as pd
 from instapy_cli import client
 from datetime import datetime
 import os
+import time
 from config import config
 
 
@@ -77,16 +78,36 @@ def generate_post(post_meta,post_online=True) -> None:
 		os.remove(image_file)
 
 
+def download_wrapper() -> None:
+
+	'''For automated downloads'''
+
+	while True:
+
+		run_remove_posts()
+		run_extract_stats()
+		run_download()
+		post = choose_post()
+		generate_post(post)
+
+		time.sleep(3600*config.POST_FREQ)
+
+
 
 
 
 if __name__ == '__main__':
 
-	run_remove_posts()
+	#For testing
 
-	run_extract_stats()
+	#run_remove_posts()
 
-	run_download()
+	#run_extract_stats()
 
-	post = choose_post()
-	generate_post(post,post_online=False)
+	#run_download()
+
+	#post = choose_post()
+	#generate_post(post,post_online=False)
+
+	#For use 
+	download_wrapper()

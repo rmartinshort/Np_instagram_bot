@@ -8,6 +8,9 @@ current_dir = os.getcwd()
 PACKAGE_ROOT = current_dir
 DATASETS = PACKAGE_ROOT+'/data'
 
+#number of hours between posts
+POST_FREQ = 8
+
 GENERATED_FEATURES = ['credits','nlikes','ncomments','nfollowers','nlikes_per_follower','ncomments_per_follower']
 
 HASHTAG_QC = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday','protect','law','notrace','litter','invasive']
