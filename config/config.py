@@ -25,8 +25,8 @@ CAPTIONS = DATASETS+'/captions_list.csv'
 
 TAGS = DATASETS+'/tags_list.csv'
 
-INSTA_UNAME = 'inspiring_national_parks'
-INSTA_PASS = 'nationalparks'
+INSTA_UNAME = 
+INSTA_PASS = 
 
 
 TAG_LINE_1 = "Inspirational Landscapes is a personal blog and not affiliated with the government"
