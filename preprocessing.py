@@ -55,10 +55,12 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
             return self.names_dir[parkid]
 
-        def __post_rank(row,likes_weight=1,comments_weight=1) -> float:
+        def __post_rank(row,likes_weight=config.LIKES_WEIGHT,comments_weight=config.COMMENT_WEIGHT) -> float:
 
             return row['mean_nlikes_diff']*likes_weight + row['mean_ncomments_diff']*comments_weight
 
+
+        X['postdate'] = pd.to_datetime(X['postdate'])
         X['mean_nlikes_diff'] = X.apply(lambda row: __difference_from_mean_likes_per_follower(row),axis=1)
         X['mean_ncomments_diff'] = X.apply(lambda row: __difference_from_mean_comments_per_follower(row),axis=1)
         X['park_id'] = X['credits'].apply(__categorize_parks)
@@ -112,6 +114,10 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
                 if word in hashstring:
                     return np.nan
             return [e.lower() for e in hashtags if len(e) > 1]
+
+        def __image_sizeQC(image_location):
+
+            '''Check image resolution and return nan if it is too low'''
 
         def __generate_repost_caption(row):
     
@@ -177,9 +183,12 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         while error == 1 and attempts < 10:
 
-            #try:
+            try:
+
+                #Choose one image from those that have passed the QC stage
 
                 pp = np.random.choice(np.arange(len(X)),size=1,replace=False,p=self.p)[0]
+
                 chosen_image = X.iloc[pp]['Flocation']
                 chosen_image_caption = X.iloc[pp]['repost_comment']
                 chosen_image_hashtags = X.iloc[pp]['hashtags']
@@ -191,8 +200,8 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 #Some QC stage here to determine if the chosen image is OK
                 error = 0
 
-            #except:
-            #    attempts += 1
+            except:
+                attempts += 1
 
         if chosen_image is None:
 
