@@ -100,14 +100,14 @@ if __name__ == '__main__':
 
 	#For testing
 
-	#run_remove_posts()
+	run_remove_posts()
 
-	#run_extract_stats()
+	run_extract_stats()
 
-	#run_download()
+	run_download()
 
-	#post = choose_post()
-	#generate_post(post,post_online=False)
+	post = choose_post()
+	generate_post(post,post_online=False)
 
 	#For use 
-	download_wrapper()
+	#download_wrapper()

@@ -8,6 +8,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from config import config
+from datetime import datetime
 
 class FeatureGenerator(BaseEstimator, TransformerMixin):
     """Categorical data missing value imputer."""
@@ -17,6 +18,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         #This hard coding is not ideal - come back and fix once the processing is
         #finalized
         self.variables = config.GENERATED_FEATURES
+        self.now = datetime.now()
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None
             ) -> 'FeatureGenerator':
@@ -39,17 +41,36 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
         X = X.copy()
 
+        def __image_size_check(image_loc) -> float:
+
+        	image = mpimg.imread(image_loc)
+        	(h,w,n) = image.shape
+        	if w < 800:
+        		return np.nan
+        	else:
+        		return (h,w,n)
+
         def __difference_from_mean_likes_per_follower(row) -> float:
 
             name = row['credits']
+            ndays = (self.now - row['postdate']).days
+
+            if ndays < 1:
+            	ndays = 1
+
             return (row['nlikes_per_follower'] - \
-                self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0])/self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0]
+                self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0]*ndays)
 
         def __difference_from_mean_comments_per_follower(row) -> float:
 
             name = row['credits']
+            ndays = (self.now - row['postdate']).days
+
+            if ndays < 1:
+            	ndays = 1
+
             return (row['ncomments_per_follower'] - \
-                self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0])/self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0]
+                self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0]*ndays)
 
         def __categorize_parks(parkid) -> int:
 
@@ -65,6 +86,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         X['mean_ncomments_diff'] = X.apply(lambda row: __difference_from_mean_comments_per_follower(row),axis=1)
         X['park_id'] = X['credits'].apply(__categorize_parks)
         X['rank'] = X.apply(lambda row: __post_rank(row),axis=1)
+        X['image_size'] = X['Flocation'].apply(__image_size_check)
 
         return X
 
@@ -145,6 +167,7 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
         X['repost_comment'] = X.apply(lambda row: __generate_repost_caption(row),axis=1)
 
         X.dropna(inplace=True)
+        X.drop_duplicates(inplace=True,keep='first',subset='credits')
 
         X.to_csv('latest_QC_posts.csv')
 
@@ -180,6 +203,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         error = 1
         chosen_image = None
         X = self._rank_posts(X)
+        print(X[['Flocation','credits','rank']])
 
         while error == 1 and attempts < 10:
 
