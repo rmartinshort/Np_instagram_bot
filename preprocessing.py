@@ -246,7 +246,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 chosen_tags.append(hashtag)
         
         credits = ' '.join(list(set(credits)))
-        chosen_tags = ','.join(chosen_tags)
+        chosen_tags = ' '.join(chosen_tags)
 
         tl1 = config.TAG_LINE_1
         tl2 = config.TAG_LINE_2
