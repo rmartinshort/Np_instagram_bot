@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#RMS 2019
 
 from instabot_py import InstaBot
+from config import config
 
 bot = InstaBot(
-    login="inspiring_national_parks",  # Enter username (lowercase). Do not enter email!
-    password="nationalparks",
+    login=config.INSTA_UNAME,  # Enter username (lowercase). Do not enter email!
+    password=config.INSTA_PASS,
     like_per_day=1000,
     comments_per_day=0,
     tag_list=['nationalparks', 'nps', 'nature', 'planetearth', 'naturelover', 'travel',

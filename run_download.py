@@ -22,16 +22,19 @@ def run_remove_posts() -> None:
 
 	'''Remove old posts from the database'''
 
-	pipeline.remove_pipe.remove()
+	pipeline.remove_pipe.removeoldposts()
 
 	print("Done remove old posts")
-
 
 def run_download() -> None:
 
 	pipeline.download_pipe.download()
 
 	print("Done download")
+
+	#Delete any prevously posted files that still exist in the repo
+
+	pipeline.remove_pipe.removepreviousposts()
 
 def choose_post() -> dict:
 
@@ -40,9 +43,6 @@ def choose_post() -> dict:
 
 	#X is a dataframe containing the metadata for each of the downloaded posts, ready for processing
 	X = pipeline.metadata_gen.process_posts()
-
-	#X.to_csv('t1.csv')
-	#X = pd.read_csv('t1.csv')
 
 	#This processing pipeline will produce the file that we want to repost and its
 	#associated caption and credits

@@ -16,17 +16,25 @@ class RemoveOldPosts():
 
     """Looks though downloaded posts and removes those older than given number of days"""
 
-    def __init__(self,profile_list=config.PROFILES_TO_DOWNLOAD,pastdays=14) -> None:
+    def __init__(self,profile_list=config.PROFILES_TO_DOWNLOAD,pastdays=config.PAST_DAYS_DL,used_files=config.PREV_POSTS) -> None:
 
-        self.profile_list = pd.read_csv(profile_list,names=['profile_name','profile_id'])
-        self.profile_list = list(self.profile_list['profile_id'])    
+        profile_list = pd.read_csv(profile_list,names=['profile_name','profile_id'])
+        self.profile_list = list(profile_list['profile_id'])   
+
+        prev_posts = pd.read_csv(used_files,names=['filename','post_date'])
+        self.prev_posts = list(prev_posts['filename']) 
+
         self.pastdays = pastdays  
         self.now = datetime.now()
         self.L = instaloader.Instaloader(quiet=True)
 
-    def remove(self) -> None:
+    def removeoldposts(self) -> None:
 
         self._removeloop()
+
+    def removepreviousposts(self) -> None:
+
+        self._remove_old_posts()
 
     def _removeloop(self) -> None:
 
@@ -53,12 +61,21 @@ class RemoveOldPosts():
                             print(f'Deleting {f}: Post outdated')
                             os.remove(f)
 
+    def _remove_old_posts(self) -> None:
+
+        for image_file in self.prev_posts:
+
+            if os.path.exists(image_file):
+
+                os.remove(image_file)
+
 
 
 class DownloadNewPosts():
     """Connect to Instagram and get post data from specified profiles"""
 
-    def __init__(self, profile_list=config.PROFILES_TO_DOWNLOAD,download_dir=config.DATASETS,maxdownloadsperprofile=5,pastdays=14) -> None:
+    def __init__(self, profile_list=config.PROFILES_TO_DOWNLOAD,\
+        download_dir=config.DATASETS,maxdownloadsperprofile=config.MAX_PROFILE_DL,pastdays=config.PAST_DAYS_DL) -> None:
 
         self.profile_list = pd.read_csv(profile_list,names=['profile_name','profile_id'])
         self.profile_list = list(self.profile_list['profile_id'])

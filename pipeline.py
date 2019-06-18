@@ -19,6 +19,8 @@ download_pipe = dd.DownloadNewPosts()
 metadata_gen = dd.PackMetadata()
 
 #preprecessing
+#add any content classification and caption generation stages here 
+
 process_pipe = Pipeline(
 
 	[
