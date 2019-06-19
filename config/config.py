@@ -50,14 +50,17 @@ PROFILE_LOGGER = DATASETS+'/profile_log.csv'
 
 PREV_POSTS = DATASETS+'/used_image_files.csv'
 
-CAPTIONS = DATASETS+'/captions_list.csv'
+CAPTIONS = {'animals':DATASETS+'/captions_list_animals.csv',\
+'buildings':DATASETS+'/captions_list_buildings.csv',\
+'landscapes':DATASETS+'/captions_list_landscapes.csv',\
+'people':DATASETS+'/captions_list_people.csv'}
 
 TAGS = DATASETS+'/tags_list.csv'
 
 MYPROFILELOG = DATASETS + '/myprofiledata.dat'
 
 #Read username and password
-upass = pd.read_csv(DATASETS+'/upass.csv',names=['uname','id','pass'])
+upass = pd.read_csv(DATASETS+'/upass.csv',names=['uname','pass','id'])
 
 INSTA_UNAME = upass.iloc[0]['uname']
 INSTA_PASS =  upass.iloc[0]['pass']

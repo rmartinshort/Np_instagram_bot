@@ -224,7 +224,11 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
     def __init__(self,captions=config.CAPTIONS,tags=config.TAGS) -> None:
 
-        self.captions_loc = captions
+        self.captions_land = captions['landscapes']
+        self.captions_ani = captions['animals']
+        self.captions_people = captions['people']
+        self.captions_build = captions['buildings']
+
         self.tags_loc = tags
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None
@@ -238,7 +242,11 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         #probability of choosing that file to post
         self.p = ranks/sum(ranks)
 
-        self.loaded_comments = pd.read_csv(self.captions_loc,sep='\t',names=['caption'])
+        self.loaded_comments_land = pd.read_csv(self.captions_land,sep='\t',names=['caption'])
+        self.loaded_comments_ani = pd.read_csv(self.captions_ani,sep='\t',names=['caption'])
+        self.loaded_comments_people = pd.read_csv(self.captions_people,sep='\t',names=['caption'])
+        self.loaded_comments_build = pd.read_csv(self.captions_build,sep='\t',names=['caption'])
+
         self.loaded_tags = pd.read_csv(self.tags_loc,names=['tag'])
 
         return self
@@ -252,7 +260,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         while error == 1 and attempts < 10:
 
-            try:
+            #try:
 
                 #Choose one image from those that have passed the QC stage
 
@@ -264,14 +272,14 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 chosen_image_pcredits = X.iloc[pp]['pcredits']
                 chosen_image_class = X.iloc[pp]['Image_class']
 
-                repost_comment = self._generate_caption_basic(self.loaded_comments,self.loaded_tags,\
-                    chosen_image_caption,list(chosen_image_pcredits),list(chosen_image_hashtags),chosen_image_class)
+                repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
+                	list(chosen_image_hashtags),chosen_image_class)
 
                 #Some QC stage here to determine if the chosen image is OK
                 error = 0
 
-            except:
-                attempts += 1
+            #except:
+            #    attempts += 1
 
         if chosen_image is None:
 
@@ -296,14 +304,23 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         return X
 
-    def _generate_caption_basic(self,loaded_comments,loaded_tags,base_caption,credits,hashtags,image_class):
+    def _generate_caption_basic(self,base_caption,credits,hashtags,image_class):
         
         """Run this to generate a caption specific to the image that has been chosen"""
 
         print(f"Image class for chosen image is {image_class}")
+
+        if image_class == 'animals':
+        	loaded_comments = self.loaded_comments_ani
+        elif image_class == 'landscapes':
+        	loaded_comments = self.loaded_comments_land
+        elif image_class == 'people':
+        	loaded_comments = self.loaded_comments_people
+        elif image_class == 'buildings':
+        	loaded_comments = self.loaded_comments_build
         
         comments_list = list(loaded_comments['caption'])
-        tags_list = list(loaded_tags['tag'])
+        tags_list = list(self.loaded_tags['tag'])
         
         chosen_caption = np.random.choice(comments_list,size=1)[0]
         chosen_tags = list(np.random.choice(tags_list,size=20,replace=False))

@@ -66,6 +66,8 @@ def generate_post(post_meta,post_online=True) -> None:
 	print(image_file)
 	print(image_caption)
 
+	print(username,password)
+
 
 	if post_online == True:
 
@@ -100,14 +102,14 @@ if __name__ == '__main__':
 
 	#For testing
 
-	run_remove_posts()
+	#run_remove_posts()
 
-	run_extract_stats()
+	#run_extract_stats()
 
-	run_download()
+	#run_download()
 
 	post = choose_post()
-	generate_post(post,post_online=False)
+	generate_post(post,post_online=True)
 
 	#For use 
 	#download_wrapper()
