@@ -14,7 +14,8 @@ from PIL import Image
 from datetime import datetime
 
 class FeatureGenerator(BaseEstimator, TransformerMixin):
-    """Categorical data missing value imputer."""
+
+    """Generate features used to rank posts"""
 
     def __init__(self) -> None:
 
@@ -25,6 +26,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None
             ) -> 'FeatureGenerator':
+
         """Fit statement to accomodate the sklearn pipeline."""
 
         self.summary = X[self.variables].groupby('credits').mean().reset_index()
@@ -40,6 +42,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+
         """Apply the transforms to the dataframe."""
 
         X = X.copy()
@@ -96,6 +99,8 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
 
 class CaptionConstructor(BaseEstimator,TransformerMixin):
+
+    '''Construct captions and do QC'''
 
     def __init__(self) -> None:
 
@@ -215,6 +220,8 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
 
 class ChoosePost(BaseEstimator, TransformerMixin):
 
+    """Chose an image and caption to post"""
+
     def __init__(self,captions=config.CAPTIONS,tags=config.TAGS) -> None:
 
         self.captions_loc = captions
@@ -245,7 +252,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         while error == 1 and attempts < 10:
 
-            #try:
+            try:
 
                 #Choose one image from those that have passed the QC stage
 
@@ -263,8 +270,8 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 #Some QC stage here to determine if the chosen image is OK
                 error = 0
 
-            #except:
-            #    attempts += 1
+            except:
+                attempts += 1
 
         if chosen_image is None:
 
