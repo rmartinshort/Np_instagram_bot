@@ -28,6 +28,8 @@ process_pipe = Pipeline(
 		pp.FeatureGenerator()),
 	('caption_construction',
 		pp.CaptionConstructor()),
+	('image_classification',
+	    pp.ContentDetermination()),
 	('image_choice',
 		pp.ChoosePost())
     

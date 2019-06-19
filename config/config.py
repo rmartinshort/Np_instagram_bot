@@ -2,11 +2,24 @@
 #RMS 2019
 
 import os
+import pandas as pd
+import torch 
 
+#Do we want to use a pretrained classifier
+#right now it determines people, animals, landscapes and buildings
+USE_CLASSIFIER = True
+
+#must be in this order!
+IMAGE_CLASSES = ("animals","buildings","landscapes","people")
 
 current_dir = os.getcwd()
 PACKAGE_ROOT = current_dir
 DATASETS = PACKAGE_ROOT+'/data'
+MODELS = PACKAGE_ROOT+'/classifiers'
+
+
+if USE_CLASSIFIER == True:
+	LOADED_CLASSIFIER = torch.load(MODELS+'/NP_insta_model_v1.pkl')
 
 #number of hours between posts
 POST_FREQ = 8
@@ -43,10 +56,12 @@ TAGS = DATASETS+'/tags_list.csv'
 
 MYPROFILELOG = DATASETS + '/myprofiledata.dat'
 
-#Username and password
-INSTA_UNAME = 'inspiring_national_parks'
-INSTA_PASS =  'nationalpark'
-INSTA_ID = 14889316562
+#Read username and password
+upass = pd.read_csv(DATASETS+'/upass.csv',names=['uname','id','pass'])
+
+INSTA_UNAME = upass.iloc[0]['uname']
+INSTA_PASS =  upass.iloc[0]['pass']
+INSTA_ID = upass.iloc[0]['id']
 
 #Tag line information used in every post
 TAG_LINE_1 = "Inspirational Landscapes is a personal blog and not affiliated with the government."

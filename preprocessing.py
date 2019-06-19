@@ -8,6 +8,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from config import config
+import torch 
+from torchvision import transforms
+from PIL import Image
 from datetime import datetime
 
 class FeatureGenerator(BaseEstimator, TransformerMixin):
@@ -91,6 +94,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         return X
 
 
+
 class CaptionConstructor(BaseEstimator,TransformerMixin):
 
     def __init__(self) -> None:
@@ -137,10 +141,6 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
                     return np.nan
             return [e.lower() for e in hashtags if len(e) > 1]
 
-        def __image_sizeQC(image_location):
-
-            '''Check image resolution and return nan if it is too low'''
-
         def __generate_repost_caption(row):
     
             caption = row['caption']
@@ -169,10 +169,49 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
         X.dropna(inplace=True)
         X.drop_duplicates(inplace=True,keep='first',subset='credits')
 
-        X.to_csv('latest_QC_posts.csv')
-
         return X
 
+
+class ContentDetermination(BaseEstimator,TransformerMixin):
+
+    '''Load a pretrained CNN (based in vgg16) and classify the images
+    into people, animals, landscapes and buildings (or whatever labels have
+    been provided)'''
+
+    def __init__(self) -> None:
+
+        return None
+
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> 'ContentDetermination':
+
+        self.model = config.LOADED_CLASSIFIER
+
+        self.transform_validation = transforms.Compose([transforms.Resize((224,224)),
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.5,),(0.5,))])
+
+        self.classes = config.IMAGE_CLASSES
+
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+
+        X = X.copy()
+
+        def __classify(image_file):
+
+            img = Image.open(image_file)
+            img = self.transform_validation(img)
+            image_for_model = img.unsqueeze(0)
+            output = self.model(image_for_model)
+            _, preds = torch.max(output,1)
+            
+            return self.classes[preds.item()]
+
+        X['Image_class'] = X['Flocation'].apply(__classify)
+        #X.to_csv('latest_QC_posts.csv')
+
+        return X
 
 class ChoosePost(BaseEstimator, TransformerMixin):
 
@@ -203,11 +242,10 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         error = 1
         chosen_image = None
         X = self._rank_posts(X)
-        print(X[['Flocation','credits','rank']])
 
         while error == 1 and attempts < 10:
 
-            try:
+            #try:
 
                 #Choose one image from those that have passed the QC stage
 
@@ -217,15 +255,16 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 chosen_image_caption = X.iloc[pp]['repost_comment']
                 chosen_image_hashtags = X.iloc[pp]['hashtags']
                 chosen_image_pcredits = X.iloc[pp]['pcredits']
+                chosen_image_class = X.iloc[pp]['Image_class']
 
                 repost_comment = self._generate_caption_basic(self.loaded_comments,self.loaded_tags,\
-                    chosen_image_caption,list(chosen_image_pcredits),list(chosen_image_hashtags))
+                    chosen_image_caption,list(chosen_image_pcredits),list(chosen_image_hashtags),chosen_image_class)
 
                 #Some QC stage here to determine if the chosen image is OK
                 error = 0
 
-            except:
-                attempts += 1
+            #except:
+            #    attempts += 1
 
         if chosen_image is None:
 
@@ -250,9 +289,11 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         return X
 
-    def _generate_caption_basic(self,loaded_comments,loaded_tags,base_caption,credits,hashtags):
+    def _generate_caption_basic(self,loaded_comments,loaded_tags,base_caption,credits,hashtags,image_class):
         
         """Run this to generate a caption specific to the image that has been chosen"""
+
+        print(f"Image class for chosen image is {image_class}")
         
         comments_list = list(loaded_comments['caption'])
         tags_list = list(loaded_tags['tag'])

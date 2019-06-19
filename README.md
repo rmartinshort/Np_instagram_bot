@@ -13,19 +13,23 @@ It can be instructed to automatically post at a user-provided frequency.
 The driver script is called run_download.py. This contains driver functions for extacting and saving the current status of the instagram profiles
 we repost from, deleting outdated posts in our repo, downloading new posts, designing a new post and actually putting it online. 
 
-All the user-defined parameters are set in config.py  
+All the user-defined parameters are set in config.py   
 
 datadownloaders.py: Classes for obtaining images and organizing their metadata    
 preprocessing.py: Classes for generating features, post QC, designing new captions etc.   
 pipeline.py: The processing pipleline. We try to keep the steps in an sklearn pipeline format as far as possible  
 ProfileManip.py: This is not actually needed, but will gather metadata about the profiles themselves and save to a file  
 bot_script.py: Uses instabot_py to like, follow and unfollow other profiles. Run this in the background. 
+MyProfileLogger.py: Extra script that can be run in the background to get the number of likes, followers etc for your profile at
+user-defined time intervals    
 
 ## How to run  
 
-- Adjust parameters in config.py to your liking  
-- Run bot_script.py in the backgound  
+- Adjust parameters in config.py to your liking   
+- Run bot_script.py in the background   
 - Run run_download.py. Every x hours, a post will be generated  
+- Run MyProfileLogger.py to log performance of the profile     
+
 
 ## Ideas/to-do list  
 
