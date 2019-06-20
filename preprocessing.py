@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import re
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils import shuffle
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from config import config
@@ -153,13 +154,11 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
             credit = row['credits']
             a = re.split("[.!]+", caption)[0]+'!'
             a = re.sub('[@$""'']', '', a)
-            if '#' in a:
-                return np.nan
-            else:
-                post_date = f"{date.month:02d}-{date.day:02d}-{date.year}"
+            
+            post_date = f"{date.month:02d}-{date.day:02d}-{date.year}"
                 
-                comment = f'Here is a segment from the original post, by @{credit} on {post_date}: "{a}"'
-                return comment
+            comment = f'Here is a segment from the original post, by @{credit} on {post_date}: "{a}"'
+            return comment
 
 
         X['hashtags'] = X['caption'].apply(__extract_hashtags)
@@ -172,7 +171,13 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
         X['repost_comment'] = X.apply(lambda row: __generate_repost_caption(row),axis=1)
 
         X.dropna(inplace=True)
-        X.drop_duplicates(inplace=True,keep='first',subset='credits')
+
+        if config.USE_CLASSIFIER == True:
+            X.drop_duplicates(inplace=True,keep='first',subset='credits')
+        else:
+            X = shuffle(X)
+
+        X.reset_index(inplace=True,drop=True)
 
         return X
 
@@ -228,6 +233,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         self.captions_ani = captions['animals']
         self.captions_people = captions['people']
         self.captions_build = captions['buildings']
+        self.captions_general = captions['general']
 
         self.tags_loc = tags
 
@@ -246,6 +252,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         self.loaded_comments_ani = pd.read_csv(self.captions_ani,sep='\t',names=['caption'])
         self.loaded_comments_people = pd.read_csv(self.captions_people,sep='\t',names=['caption'])
         self.loaded_comments_build = pd.read_csv(self.captions_build,sep='\t',names=['caption'])
+        self.loaded_comments_general = pd.read_csv(self.captions_general,sep='\t',names=['caption'])
 
         self.loaded_tags = pd.read_csv(self.tags_loc,names=['tag'])
 
@@ -260,28 +267,31 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         while error == 1 and attempts < 10:
 
-            #try:
+            try:
 
                 #Choose one image from those that have passed the QC stage
 
-                pp = np.random.choice(np.arange(len(X)),size=1,replace=False,p=self.p)[0]
+                pp = np.random.choice(np.arange(len(X)),size=1,replace=True,p=self.p)[0]
 
-                chosen_image = X.iloc[pp]['Flocation']
                 chosen_image_caption = X.iloc[pp]['repost_comment']
                 chosen_image_hashtags = X.iloc[pp]['hashtags']
                 chosen_image_pcredits = X.iloc[pp]['pcredits']
-                chosen_image_class = X.iloc[pp]['Image_class']
+
+                if config.USE_CLASSIFIER == True: 
+                    chosen_image_class = X.iloc[pp]['Image_class']
+                else:
+                    chosen_image_class = 'general'
 
                 repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
                     list(chosen_image_hashtags),chosen_image_class)
 
-                #Some QC stage here to determine if the chosen image is OK
+                chosen_image = X.iloc[pp]['Flocation']
                 error = 0
 
-            #except:
-            #    attempts += 1
+            except:
+                attempts += 1
 
-        if chosen_image is None:
+        if chosen_image == None:
 
             print("ERROR!")
 
@@ -304,11 +314,9 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
         return X
 
-    def _generate_caption_basic(self,base_caption,credits,hashtags,image_class):
+    def _generate_caption_basic(self,base_caption,credits,hashtags,image_class='general'):
         
         """Run this to generate a caption specific to the image that has been chosen"""
-
-        print(f"Image class for chosen image is {image_class}")
 
         if image_class == 'animals':
             loaded_comments = self.loaded_comments_ani
@@ -318,6 +326,8 @@ class ChoosePost(BaseEstimator, TransformerMixin):
             loaded_comments = self.loaded_comments_people
         elif image_class == 'buildings':
             loaded_comments = self.loaded_comments_build
+        else:
+            loaded_comments = self.loaded_comments_general
         
         comments_list = list(loaded_comments['caption'])
         tags_list = list(self.loaded_tags['tag'])

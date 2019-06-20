@@ -25,10 +25,10 @@ user-defined time intervals
 
 ## How to run  
 
-- Adjust parameters in config.py to your liking   
-- Run bot_script.py in the background   
-- Run run_download.py. Every x hours, a post will be generated  
-- Run MyProfileLogger.py to log performance of the profile     
+- Adjust parameters in config.py to your liking      
+- Run bot_script.py in the background     
+- Run run_download.py. Every x hours, a post will be generated    
+- Run MyProfileLogger.py to log performance of the profile      
 
 
 ## Ideas/to-do list  

@@ -107,8 +107,8 @@ if __name__ == '__main__':
 
 	#run_download()
 
-	#post = choose_post()
-	#generate_post(post,post_online=True)
+	post = choose_post()
+	generate_post(post,post_online=False)
 
 	#For use 
-	download_wrapper()
+	#download_wrapper()

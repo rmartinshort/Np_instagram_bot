@@ -6,7 +6,7 @@ import pandas as pd
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
-USE_CLASSIFIER = True
+USE_CLASSIFIER = False
 
 #must be in this order!
 IMAGE_CLASSES = ("animals","buildings","landscapes","people")
@@ -19,12 +19,22 @@ MODELS = PACKAGE_ROOT+'/classifiers'
 
 if USE_CLASSIFIER == True:
 	CLASSIFIERPATH = MODELS+'/NP_insta_model_v1.pkl'
+else:
+	CLASSIFIERPATH = None
 
 
 #number of hours between posts
 POST_FREQ = 8
 #number of hours between logging attempts
 LOG_FREQ = 1
+
+#profiles to download from
+PROFILES_TO_DOWNLOAD = DATASETS+'/national_park_instaids.csv'
+BASIC_PROFILES = DATASETS+'/national_park_instaids_other.csv'
+
+if USE_CLASSIFIER == False:
+	PROFILES_TO_DOWNLOAD = BASIC_PROFILES
+	POST_FREQ = 24
 
 #weightings for generating the image ranks
 LIKES_WEIGHT = 1
@@ -43,8 +53,7 @@ GENERATED_FEATURES = ['credits','nlikes','ncomments','nfollowers','nlikes_per_fo
 #Hashtags that will disqualify an image 
 HASHTAG_QC = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday','protect','law','notrace','litter','invasive']
 
-#Datafiles that the progam uses
-PROFILES_TO_DOWNLOAD = DATASETS+'/national_park_instaids.csv'
+#Various files that the program uses
 
 PROFILE_LOGGER = DATASETS+'/profile_log.csv'
 
@@ -53,7 +62,8 @@ PREV_POSTS = DATASETS+'/used_image_files.csv'
 CAPTIONS = {'animals':DATASETS+'/captions_list_animals.csv',\
 'buildings':DATASETS+'/captions_list_buildings.csv',\
 'landscapes':DATASETS+'/captions_list_landscapes.csv',\
-'people':DATASETS+'/captions_list_people.csv'}
+'people':DATASETS+'/captions_list_people.csv',\
+'general':DATASETS+'/captions_list.csv'}
 
 TAGS = DATASETS+'/tags_list.csv'
 

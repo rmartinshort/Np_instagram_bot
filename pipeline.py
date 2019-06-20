@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 import datadownloaders as dd
 import ProfileManip as pm
 import preprocessing as pp
+from config import config
 
 #download the profiles
 profiles_pipe = pm.ExtractParkStats()
@@ -21,16 +22,32 @@ metadata_gen = dd.PackMetadata()
 #preprecessing
 #add any content classification and caption generation stages here 
 
-process_pipe = Pipeline(
+if config.USE_CLASSIFIER == True: 
 
-	[
-	('feature_generation',
-		pp.FeatureGenerator()),
-	('caption_construction',
-		pp.CaptionConstructor()),
-	('image_classification',
-	    pp.ContentDetermination()),
-	('image_choice',
-		pp.ChoosePost())
-	]
-)
+	process_pipe = Pipeline(
+
+		[
+		('feature_generation',
+			pp.FeatureGenerator()),
+		('caption_construction',
+			pp.CaptionConstructor()),
+		('image_classification',
+		    pp.ContentDetermination()),
+		('image_choice',
+			pp.ChoosePost())
+		]
+	)
+	
+else:
+
+	process_pipe = Pipeline(
+
+		[
+		('feature_generation',
+			pp.FeatureGenerator()),
+		('caption_construction',
+			pp.CaptionConstructor()),
+		('image_choice',
+			pp.ChoosePost())
+		]
+	)
