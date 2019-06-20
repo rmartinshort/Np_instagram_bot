@@ -24,7 +24,7 @@ else:
 
 
 #number of hours between posts
-POST_FREQ = 8
+POST_FREQ = 6
 #number of hours between logging attempts
 LOG_FREQ = 1
 

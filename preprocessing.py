@@ -57,42 +57,65 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
             else:
                 return (h,w,n)
 
-        def __difference_from_mean_likes_per_follower(row) -> float:
-
-            name = row['credits']
-            ndays = (self.now - row['postdate']).days
-
-            if ndays < 1:
-                ndays = 1
-
-            return (row['nlikes_per_follower'] - \
-                self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0]*ndays)
-
-        def __difference_from_mean_comments_per_follower(row) -> float:
-
-            name = row['credits']
-            ndays = (self.now - row['postdate']).days
-
-            if ndays < 1:
-                ndays = 1
-
-            return (row['ncomments_per_follower'] - \
-                self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0]*ndays)
+        def __difference_from_mean_likes_per_follower(df) -> list:
+            
+            
+            vals = []
+            for i, row in df.iterrows():
+                
+                name = row['credits']
+                ndays = (self.now - row['postdate']).days
+                
+                if ndays < 1:
+                    ndays = 1
+                    
+                vals.append((row['nlikes_per_follower'] - self.summary[self.summary['credits']==name] ['nlikes_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0]*ndays))
+            
+            return vals
+        
+        def __difference_from_mean_comments_per_follower(df) -> list:
+            
+            
+            vals = []
+            for i, row in df.iterrows():
+                
+                name = row['credits']
+                ndays = (self.now - row['postdate']).days
+                
+                if ndays < 1:
+                    ndays = 1
+                    
+                vals.append((row['ncomments_per_follower'] - self.summary[self.summary['credits']==name] ['ncomments_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0]*ndays))
+                
+                
+            return vals
 
         def __categorize_parks(parkid) -> int:
 
             return self.names_dir[parkid]
 
-        def __post_rank(row,likes_weight=config.LIKES_WEIGHT,comments_weight=config.COMMENT_WEIGHT) -> float:
+        def __post_rank(df,likes_weight=config.LIKES_WEIGHT,comments_weight=config.COMMENT_WEIGHT) -> list:
+            
+            vals = []
 
-            return row['mean_nlikes_diff']*likes_weight + row['mean_ncomments_diff']*comments_weight
+            for i, row in df.iterrows():
+                
+                vals.append(row['mean_nlikes_diff']*likes_weight + row['mean_ncomments_diff']*comments_weight)
+                
+            
+            return(vals)
 
 
         X['postdate'] = pd.to_datetime(X['postdate'])
-        X['mean_nlikes_diff'] = X.apply(lambda row: __difference_from_mean_likes_per_follower(row),axis=1)
-        X['mean_ncomments_diff'] = X.apply(lambda row: __difference_from_mean_comments_per_follower(row),axis=1)
+        
+        X['mean_nlikes_diff'] = __difference_from_mean_likes_per_follower(X)
+        
+        X['mean_ncomments_diff'] = __difference_from_mean_comments_per_follower(X)
+        
         X['park_id'] = X['credits'].apply(__categorize_parks)
-        X['rank'] = X.apply(lambda row: __post_rank(row),axis=1)
+        
+        X['rank'] = __post_rank(X)
+        
         X['image_size'] = X['Flocation'].apply(__image_size_check)
 
         return X
@@ -128,16 +151,24 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
             else:
                 return hashtags
 
-        def __extract_pcredits(row):
-            string = row['caption']
+        def __extract_pcredits(X) -> list:
+            
+            vals = []
+            
+            for i, row in X.iterrows():
+            
+            
+                string = row['caption']
 
-            try:
-                pcredits = [re.sub(r"(\W+)$", "", j) for j in set([i for i in string.split() if i.startswith("@")])]
-                pcredits.append('@'+row['credits'])
-            except:
-                return np.nan
+                try:
+                    pcredits = [re.sub(r"(\W+)$", "", j) for j in set([i for i in string.split() if i.startswith("@")])]
+                    pcredits.append('@'+row['credits'])
+                except:
+                    pcredits = np.nan
+                
+                vals.append(pcredits)
 
-            return pcredits
+            return vals
 
         def __hashtagQC(hashtags):
             
@@ -147,28 +178,33 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
                     return np.nan
             return [e.lower() for e in hashtags if len(e) > 1]
 
-        def __generate_repost_caption(row):
-    
-            caption = row['caption']
-            date = row['postdate']
-            credit = row['credits']
-            a = re.split("[.!]+", caption)[0]+'!'
-            a = re.sub('[@$""'']', '', a)
+        def __generate_repost_caption(X):
             
-            post_date = f"{date.month:02d}-{date.day:02d}-{date.year}"
+            vals = []
+            
+            for i, row in X.iterrows():
+    
+                caption = row['caption']
+                date = row['postdate']
+                credit = row['credits']
+                a = re.split("[.!]+", caption)[0]+'!'
+                a = re.sub('[@$""'']', '', a)
                 
-            comment = f'Here is a segment from the original post, by @{credit} on {post_date}: "{a}"'
-            return comment
+                post_date = f"{date.month:02d}-{date.day:02d}-{date.year}"
+                    
+                vals.append('Here is a segment from the original post, by @{credit} on {post_date}: "{a}"')
+                
+            return vals
 
 
         X['hashtags'] = X['caption'].apply(__extract_hashtags)
-        X['pcredits'] = X.apply(lambda row: __extract_pcredits(row),axis=1)
+        X['pcredits'] = __extract_pcredits(X)
         X['postdate'] = pd.to_datetime(X['postdate'])
-
+        
         X.dropna(inplace=True)
 
         X['hashtags'] = X['hashtags'].apply(__hashtagQC)
-        X['repost_comment'] = X.apply(lambda row: __generate_repost_caption(row),axis=1)
+        X['repost_comment'] = __generate_repost_caption(X)
 
         X.dropna(inplace=True)
 
