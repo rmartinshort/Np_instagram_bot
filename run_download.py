@@ -9,7 +9,6 @@ import os
 import time
 from config import config
 
-
 def run_extract_stats() -> None:
 
 	'''Get the latest stats on the accounts we want to download from'''
@@ -86,9 +85,9 @@ def download_wrapper() -> None:
 
 	while True:
 
-		run_remove_posts()
-		run_extract_stats()
-		run_download()
+		#run_remove_posts()
+		#run_extract_stats()
+		#run_download()
 		post = choose_post()
 		generate_post(post)
 
@@ -108,8 +107,8 @@ if __name__ == '__main__':
 
 	#run_download()
 
-	post = choose_post()
-	generate_post(post,post_online=True)
+	#post = choose_post()
+	#generate_post(post,post_online=True)
 
 	#For use 
-	#download_wrapper()
+	download_wrapper()

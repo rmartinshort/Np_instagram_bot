@@ -3,7 +3,6 @@
 
 import os
 import pandas as pd
-import torch 
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
@@ -19,7 +18,8 @@ MODELS = PACKAGE_ROOT+'/classifiers'
 
 
 if USE_CLASSIFIER == True:
-	LOADED_CLASSIFIER = torch.load(MODELS+'/NP_insta_model_v1.pkl')
+	CLASSIFIERPATH = MODELS+'/NP_insta_model_v1.pkl'
+
 
 #number of hours between posts
 POST_FREQ = 8

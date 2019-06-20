@@ -32,6 +32,5 @@ process_pipe = Pipeline(
 	    pp.ContentDetermination()),
 	('image_choice',
 		pp.ChoosePost())
-    
 	]
 )

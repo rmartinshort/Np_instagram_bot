@@ -49,12 +49,12 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
         def __image_size_check(image_loc) -> float:
 
-        	image = mpimg.imread(image_loc)
-        	(h,w,n) = image.shape
-        	if w < 800:
-        		return np.nan
-        	else:
-        		return (h,w,n)
+            image = mpimg.imread(image_loc)
+            (h,w,n) = image.shape
+            if w < 800:
+                return np.nan
+            else:
+                return (h,w,n)
 
         def __difference_from_mean_likes_per_follower(row) -> float:
 
@@ -62,7 +62,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
             ndays = (self.now - row['postdate']).days
 
             if ndays < 1:
-            	ndays = 1
+                ndays = 1
 
             return (row['nlikes_per_follower'] - \
                 self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['nlikes_per_follower'].values[0]*ndays)
@@ -73,7 +73,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
             ndays = (self.now - row['postdate']).days
 
             if ndays < 1:
-            	ndays = 1
+                ndays = 1
 
             return (row['ncomments_per_follower'] - \
                 self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0])/(self.summary[self.summary['credits']==name]['ncomments_per_follower'].values[0]*ndays)
@@ -189,7 +189,8 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> 'ContentDetermination':
 
-        self.model = config.LOADED_CLASSIFIER
+        self.mymodel = torch.load(config.CLASSIFIERPATH)
+
 
         self.transform_validation = transforms.Compose([transforms.Resize((224,224)),
                                 transforms.ToTensor(),
@@ -201,20 +202,19 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
-        X = X.copy()
+        classifications = []
 
-        def __classify(image_file):
+        for image_file in X['Flocation']:
 
             img = Image.open(image_file)
             img = self.transform_validation(img)
             image_for_model = img.unsqueeze(0)
-            output = self.model(image_for_model)
+            output = self.mymodel(image_for_model)
             _, preds = torch.max(output,1)
             
-            return self.classes[preds.item()]
+            classifications.append(self.classes[preds.item()])
 
-        X['Image_class'] = X['Flocation'].apply(__classify)
-        #X.to_csv('latest_QC_posts.csv')
+        X['Image_class'] = classifications
 
         return X
 
@@ -273,7 +273,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                 chosen_image_class = X.iloc[pp]['Image_class']
 
                 repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
-                	list(chosen_image_hashtags),chosen_image_class)
+                    list(chosen_image_hashtags),chosen_image_class)
 
                 #Some QC stage here to determine if the chosen image is OK
                 error = 0
@@ -311,13 +311,13 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         print(f"Image class for chosen image is {image_class}")
 
         if image_class == 'animals':
-        	loaded_comments = self.loaded_comments_ani
+            loaded_comments = self.loaded_comments_ani
         elif image_class == 'landscapes':
-        	loaded_comments = self.loaded_comments_land
+            loaded_comments = self.loaded_comments_land
         elif image_class == 'people':
-        	loaded_comments = self.loaded_comments_people
+            loaded_comments = self.loaded_comments_people
         elif image_class == 'buildings':
-        	loaded_comments = self.loaded_comments_build
+            loaded_comments = self.loaded_comments_build
         
         comments_list = list(loaded_comments['caption'])
         tags_list = list(self.loaded_tags['tag'])
