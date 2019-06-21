@@ -23,6 +23,7 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         #This hard coding is not ideal - come back and fix once the processing is
         #finalized
         self.variables = config.GENERATED_FEATURES
+        self.previous_posts = config.PREV_POSTS
         self.now = datetime.now()
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None
@@ -31,6 +32,8 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         """Fit statement to accomodate the sklearn pipeline."""
 
         self.summary = X[self.variables].groupby('credits').mean().reset_index()
+        previous_posts = pd.read_csv(self.previous_posts,names=['Flocation','posted_date'])
+        self.previous_posts = list(previous_posts['Flocation'])
 
         park_names = list(X['credits'].unique())
 
@@ -86,14 +89,26 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         def __post_rank(row,likes_weight=config.LIKES_WEIGHT,comments_weight=config.COMMENT_WEIGHT) -> float:
 
             return row['mean_nlikes_diff']*likes_weight + row['mean_ncomments_diff']*comments_weight
+        
+        def __previously_posted(floc):
+            
+            if floc in self.previous_posts:
+                return np.nan
+            else:
+                return 1
 
 
+        X['posting_OK'] = X['Flocation'].apply(__previously_posted)
+        X.dropna(inplace=True)
+        X.reset_index(drop=True,inplace=True)
+        
         X['postdate'] = pd.to_datetime(X['postdate'])
         X['mean_nlikes_diff'] = X.apply(lambda row: __difference_from_mean_likes_per_follower(row),axis=1)
         X['mean_ncomments_diff'] = X.apply(lambda row: __difference_from_mean_comments_per_follower(row),axis=1)
         X['park_id'] = X['credits'].apply(__categorize_parks)
         X['rank'] = X.apply(lambda row: __post_rank(row),axis=1)
         X['image_size'] = X['Flocation'].apply(__image_size_check)
+        
 
         return X
 
@@ -217,9 +232,17 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
             output = self.mymodel(image_for_model)
             _, preds = torch.max(output,1)
             
-            classifications.append(self.classes[preds.item()])
+            classification = self.classes[preds.item()]
+            
+            #We don't really want images of people, so remove them
+            
+            if classification == 'people':
+                classifications.append(np.nan)
+            else:
+                classifications.append(classification)
 
         X['Image_class'] = classifications
+        X.dropna(inplace=True)
 
         return X
 

@@ -6,7 +6,7 @@ import pandas as pd
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
-USE_CLASSIFIER = False
+USE_CLASSIFIER = True
 
 #must be in this order!
 IMAGE_CLASSES = ("animals","buildings","landscapes","people")
@@ -24,7 +24,7 @@ else:
 
 
 #number of hours between posts
-POST_FREQ = 8
+POST_FREQ = 7
 #number of hours between logging attempts
 LOG_FREQ = 1
 
