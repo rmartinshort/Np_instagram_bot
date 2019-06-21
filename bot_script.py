@@ -7,13 +7,15 @@ from config import config
 bot = InstaBot(
     login=config.INSTA_UNAME,  # Enter username (lowercase). Do not enter email!
     password=config.INSTA_PASS,
-    like_per_day=1000,
-    comments_per_day=0,
+    like_per_day=2000,
+    comments_per_day=10,
     tag_list=['nationalparks', 'nps', 'nature', 'planetearth', 'naturelover', 'travel',
               'naturephotography', 'wanderlust', 'preservation', 'roadtrip', 'findyourpark',
               'usa', 'america', 'adventure', 'tourism', 'inspiration', 'art',
               'wonder', 'majesty', 'nationalparksusa', 'hiking', 'camping',
-              'backpacking', 'sublime', 'preservation', 'environment', 'animals', 'igersnature'],
+              'backpacking', 'sublime', 'preservation', 'environment', 'animals', 'igersnature',
+              'greatoutdoors', 'preservation', 'wildlife', 'astrophotography', 'yellowstone', 'yosemite',
+              'wild', 'grandcanyon'],
     tag_blacklist=[],
     user_blacklist={},
     max_like_for_one_tag=50,
@@ -33,7 +35,42 @@ bot = InstaBot(
     proxy="",
     # List of list of words, each of which will be used to generate comment
     # For example: "This shot feels wow!"
-    comment_list=[],
+    comment_list=[
+        ["This", "Your"],
+        ["photo", "picture", "pic", "shot", "image"],
+        ["is", "looks", "is 👉", "is really"],
+        [
+            "great",
+            "super",
+            "good",
+            "very good",
+            "good",
+            "wow",
+            "WOW",
+            "cool",
+            "GREAT",
+            "magnificent",
+            "magical",
+            "very cool",
+            "stylish",
+            "beautiful",
+            "so beautiful",
+            "so stylish",
+            "so professional",
+            "lovely",
+            "so lovely",
+            "very lovely",
+            "glorious",
+            "so glorious",
+            "very glorious",
+            "adorable",
+            "excellent",
+            "amazing",
+            "fantastic",
+            "incredible"
+        ],
+        ["🙌", "... 👏", "!", "! 😍", "😎"],
+    ],
     # Use unwanted_username_list to block usernames containing a string
     # Will do partial matches; i.e. 'mozart' will block 'legend_mozart'
     # 'free_followers' will be blocked because it contains 'free'
