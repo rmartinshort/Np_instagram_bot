@@ -85,9 +85,9 @@ def download_wrapper() -> None:
 
 	while True:
 
-		#run_remove_posts()
-		#run_extract_stats()
-		#run_download()
+		run_remove_posts()
+		run_extract_stats()
+		run_download()
 		post = choose_post()
 		generate_post(post)
 
@@ -107,8 +107,8 @@ if __name__ == '__main__':
 
 	#run_download()
 
-	post = choose_post()
-	generate_post(post,post_online=False)
+	#post = choose_post()
+	#generate_post(post,post_online=False)
 
 	#For use 
-	#download_wrapper()
+	download_wrapper()
