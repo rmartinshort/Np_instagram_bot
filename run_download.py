@@ -73,10 +73,10 @@ def generate_post(post_meta,post_online=True) -> None:
 		with client(username, password, write_cookie_file=True) as cli:
 			cli.upload(image_file, image_caption)
 
-		used_image_file = open(config.PREV_POSTS,'a')
-		used_image_file.write(f"{image_file},{datetime.now()}\n")
-		used_image_file.close()
-		os.remove(image_file)
+	used_image_file = open(config.PREV_POSTS,'a')
+	used_image_file.write(f"{image_file},{datetime.now()}\n")
+	used_image_file.close()
+	os.remove(image_file)
 
 
 def download_wrapper() -> None:
@@ -89,9 +89,9 @@ def download_wrapper() -> None:
 		run_extract_stats()
 		run_download()
 		post = choose_post()
-		generate_post(post)
+		generate_post(post,post_online=False)
 
-		time.sleep(3600*config.POST_FREQ)
+		time.sleep(1*config.POST_FREQ)
 
 
 

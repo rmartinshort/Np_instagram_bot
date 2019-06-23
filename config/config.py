@@ -6,7 +6,7 @@ import pandas as pd
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
-USE_CLASSIFIER = True
+USE_CLASSIFIER = False
 
 #must be in this order!
 IMAGE_CLASSES = ("animals","buildings","landscapes","people")

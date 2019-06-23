@@ -19,11 +19,9 @@ class RemoveOldPosts():
         profile_list = pd.read_csv(profile_list,names=['profile_name','profile_id'])
         self.profile_list = list(profile_list['profile_id'])   
 
-        prev_posts = pd.read_csv(used_files,names=['filename','post_date'])
-        self.prev_posts = list(prev_posts['filename']) 
-
         self.pastdays = pastdays  
         self.now = datetime.now()
+        self.used_files = used_files
         self.L = instaloader.Instaloader(quiet=True)
 
     def removeoldposts(self) -> None:
@@ -31,6 +29,9 @@ class RemoveOldPosts():
         self._removeloop()
 
     def removepreviousposts(self) -> None:
+
+        prev_posts = pd.read_csv(self.used_files,names=['filename','post_date'])
+        self.prev_posts = list(prev_posts['filename']) 
 
         self._remove_old_posts()
 
@@ -61,11 +62,18 @@ class RemoveOldPosts():
 
     def _remove_old_posts(self) -> None:
 
+        print(self.prev_posts)
+
         for image_file in self.prev_posts:
 
             if os.path.exists(image_file):
 
                 os.remove(image_file)
+                print(f'Deleting {image_file}: post already used')
+
+            else:
+
+                print(f"Tried to delete {image_file}, but file not found!")
 
 
 
@@ -81,7 +89,6 @@ class DownloadNewPosts():
         self.maxdownloadsperprofile = maxdownloadsperprofile
         self.pastdays = pastdays
         self.L = instaloader.Instaloader(quiet=True)
-        self.now = datetime.now()
 
     def download(self) -> None:
         """Do the download across all profiles"""
@@ -92,6 +99,8 @@ class DownloadNewPosts():
 
     def _download_recent_posts(self,profile_id) -> None:
         """For downloading insta posts from one profile"""
+
+        self.now = datetime.now()
 
         posts = instaloader.Profile.from_id(context=self.L.context,profile_id=profile_id).get_posts()
     
@@ -122,10 +131,7 @@ class PackMetadata():
         self.L = instaloader.Instaloader(quiet=True)
         profiles = pd.read_csv(profile_list,names=['profile_name','profile_id'])
         self.profiles = list(profiles['profile_id'])
-
-        #Read previous posts so that we don't post the same file multiple times
-        prev_posts = pd.read_csv(prev_posts,names=['Name','Date'])
-        self.prev_posts = list(prev_posts['Name'])
+        self.used_files = prev_posts
 
     def _get_metadata(self,metadatafile) -> None:
     
@@ -160,6 +166,10 @@ class PackMetadata():
         
 
     def process_posts(self,debug=False) -> pd.DataFrame:
+
+        #Read previous posts so that we don't post the same file multiple times
+        prev_posts = pd.read_csv(self.used_files,names=['Name','Date'])
+        self.prev_posts = list(prev_posts['Name'])
         
         post_metadata = {
             'Flocation':[],
