@@ -142,17 +142,17 @@ class PackMetadata():
             time_since_postdate = datetime.now() - postdate
             nlikes = metadatafile.likes
 
-            try:
-                location_name = metadatafile.location.name
-            except:
-                location_name = np.nan
+            # try:
+            #     location_name = metadatafile.location.name
+            # except:
+            #     location_name = 'None'
 
-            try:
-                location_lat = metadatafile.location.lat
-                location_lon = metadatafile.location.lng
-            except:
-                location_lon = np.nan
-                location_lat = np.nan
+            # try:
+            #     location_lat = metadatafile.location.lat
+            #     location_lon = metadatafile.location.lng
+            # except:
+            #     location_lon = 'None'
+            #     location_lat = 'None'
 
             ncomments = metadatafile.comments
             nfollowers = metadatafile.owner_profile.followers
@@ -160,8 +160,7 @@ class PackMetadata():
             ncomments_per_follower = ncomments/nfollowers
             
             return [username,caption,caption_hastags,postdate,time_since_postdate,\
-                   nlikes,location_name,location_lat,\
-                   location_lon,ncomments,nfollowers,nlikes_per_follower,ncomments_per_follower]
+                   nlikes,ncomments,nfollowers,nlikes_per_follower,ncomments_per_follower]
         
         
 
@@ -178,9 +177,6 @@ class PackMetadata():
             'postdate':[],
             'timesincepost':[],
             'nlikes':[],
-            'location':[],
-            'lon':[],
-            'lat':[],
             'ncomments':[],
             'nfollowers':[],
             'nlikes_per_follower':[],
@@ -218,14 +214,11 @@ class PackMetadata():
                         post_metadata['caption'].append(metadata_list[1])
                         post_metadata['postdate'].append(metadata_list[3])
                         post_metadata['timesincepost'].append(metadata_list[4])
-                        post_metadata['nlikes'].append(metadata_list[5])
-                        post_metadata['location'].append(metadata_list[6])
-                        post_metadata['lat'].append(metadata_list[7])
-                        post_metadata['lon'].append(metadata_list[8])
-                        post_metadata['ncomments'].append(metadata_list[9])
-                        post_metadata['nfollowers'].append(metadata_list[10])
-                        post_metadata['nlikes_per_follower'].append(metadata_list[11])
-                        post_metadata['ncomments_per_follower'].append(metadata_list[12])
+                        post_metadata['nlikes'].append(metadata_list[5])ßß
+                        post_metadata['ncomments'].append(metadata_list[6])
+                        post_metadata['nfollowers'].append(metadata_list[7])
+                        post_metadata['nlikes_per_follower'].append(metadata_list[8])
+                        post_metadata['ncomments_per_follower'].append(metadata_list[9])
                         
             
         return pd.DataFrame(post_metadata)

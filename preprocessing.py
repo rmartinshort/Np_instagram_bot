@@ -50,6 +50,8 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
 
         X = X.copy()
 
+        #We could do some NLP here to get sentiments scores on the captions, for example 
+
         def __image_size_check(image_loc) -> float:
 
             image = mpimg.imread(image_loc)
@@ -253,25 +255,29 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
     def __init__(self,captions=config.CAPTIONS,tags=config.TAGS) -> None:
 
-        self.captions_land = captions['landscapes']
-        self.captions_ani = captions['animals']
-        self.captions_people = captions['people']
-        self.captions_build = captions['buildings']
-        self.captions_general = captions['general']
+        captions_land = captions['landscapes']
+        captions_ani = captions['animals']
+        captions_people = captions['people']
+        captions_build = captions['buildings']
+        captions_general = captions['general']
+        tags_loc = tags
 
-        self.tags_loc = tags
+        #one option here would be to determine the topic score of each caption as a four component vector
+        #Then choose the caption whose vector is most similar to the vector produced by either the classification
+        #algorithm or by topic modelling of the caption of the chosen image.
+
+        self.loaded_comments_land = pd.read_csv(captions_land,sep='\t',names=['caption'])
+        self.loaded_comments_ani = pd.read_csv(captions_ani,sep='\t',names=['caption'])
+        self.loaded_comments_people = pd.read_csv(captions_people,sep='\t',names=['caption'])
+        self.loaded_comments_build = pd.read_csv(captions_build,sep='\t',names=['caption'])
+        self.loaded_comments_general = pd.read_csv(captions_general,sep='\t',names=['caption'])
+
+        self.loaded_tags = pd.read_csv(self.tags_loc,names=['tag'])
+
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None
             ) -> 'ChoosePost':
         """Fit statement to accomodate the sklearn pipeline."""
-
-        self.loaded_comments_land = pd.read_csv(self.captions_land,sep='\t',names=['caption'])
-        self.loaded_comments_ani = pd.read_csv(self.captions_ani,sep='\t',names=['caption'])
-        self.loaded_comments_people = pd.read_csv(self.captions_people,sep='\t',names=['caption'])
-        self.loaded_comments_build = pd.read_csv(self.captions_build,sep='\t',names=['caption'])
-        self.loaded_comments_general = pd.read_csv(self.captions_general,sep='\t',names=['caption'])
-
-        self.loaded_tags = pd.read_csv(self.tags_loc,names=['tag'])
 
         return self
 
