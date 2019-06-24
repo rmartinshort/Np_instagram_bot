@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 import time
 from config import config
+import numpy as np
 
 def run_extract_stats() -> None:
 
@@ -27,9 +28,15 @@ def run_remove_posts() -> None:
 
 def run_download() -> None:
 
+	t0 = time.time()
+
 	pipeline.download_pipe.download()
 
 	print("Done download")
+
+	t1 = time.time()
+
+	print(f'Time taken: {t1-t0} seconds')
 
 	#Delete any prevously posted files that still exist in the repo
 
@@ -46,8 +53,8 @@ def choose_post() -> dict:
 	#This processing pipeline will produce the file that we want to repost and its
 	#associated caption and credits
 
-	pipeline.process_pipe.fit(X)
-	result = pipeline.process_pipe.transform(X)
+	result = pipeline.process_pipe.fit_transform(X)
+	#result = pipeline.process_pipe.transform(X)
 	
 	return result
 
@@ -89,9 +96,15 @@ def download_wrapper() -> None:
 		run_extract_stats()
 		run_download()
 		post = choose_post()
-		generate_post(post,post_online=False)
 
-		time.sleep(1*config.POST_FREQ)
+		print(post)
+
+		if post['Image'] == "no_image":
+			print('Image inventory empty. Waiting to try again')
+			time.sleep(3600*config.POST_FREQ)
+		else:
+			generate_post(post,post_online=True)
+			time.sleep(3600*config.POST_FREQ)
 
 
 

@@ -13,6 +13,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from datetime import datetime
+import time
 
 class FeatureGenerator(BaseEstimator, TransformerMixin):
 
@@ -123,6 +124,9 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
+        print("Constructing captions")
+        t0 = time.time()
+
         X = X.copy()
 
         def __extract_hashtags(string):
@@ -180,12 +184,10 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
 
         X.dropna(inplace=True)
 
-        if config.USE_CLASSIFIER == True:
-            X.drop_duplicates(inplace=True,keep='first',subset='credits')
-        else:
-            X = shuffle(X)
-
         X.reset_index(inplace=True,drop=True)
+        t1 = time.time()
+
+        print(f'Done in {t1-t0} seconds')
 
         return X
 
@@ -215,6 +217,11 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
+        print("Classifying images")
+        t0 = time.time()
+
+        X = X.copy()
+
         classifications = []
 
         for image_file in X['Flocation']:
@@ -227,7 +234,7 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
             
             classification = self.classes[preds.item()]
             
-            #We don't really want images of people, so remove them
+            #We don't really want images of people, so remove them (replace with nan, which will be removed later)
             
             if classification == 'people':
                 classifications.append(np.nan)
@@ -235,7 +242,8 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
                 classifications.append(classification)
 
         X['Image_class'] = classifications
-        X.dropna(inplace=True)
+        t1 = time.time()
+        print(f'Done in {t1-t0} seconds')
 
         return X
 
@@ -257,13 +265,6 @@ class ChoosePost(BaseEstimator, TransformerMixin):
             ) -> 'ChoosePost':
         """Fit statement to accomodate the sklearn pipeline."""
 
-        ranks = X['rank'].values
-        ranks = np.nan_to_num(ranks)
-        ranks = ranks - min(ranks)
-
-        #probability of choosing that file to post
-        self.p = ranks/sum(ranks)
-
         self.loaded_comments_land = pd.read_csv(self.captions_land,sep='\t',names=['caption'])
         self.loaded_comments_ani = pd.read_csv(self.captions_ani,sep='\t',names=['caption'])
         self.loaded_comments_people = pd.read_csv(self.captions_people,sep='\t',names=['caption'])
@@ -276,59 +277,70 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
     def transform(self, X: pd.DataFrame,debug=False) -> dict:
 
-        attempts = 0
-        error = 1
-        chosen_image = None
-        X = self._rank_posts(X)
+        if X.shape[0] < 1:
 
-        while error == 1 and attempts < 10:
-
-            try:
-
-                #Choose one image from those that have passed the QC stage
-
-                pp = np.random.choice(np.arange(len(X)),size=1,replace=True,p=self.p)[0]
-
-                chosen_image_caption = X.iloc[pp]['repost_comment']
-                chosen_image_hashtags = X.iloc[pp]['hashtags']
-                chosen_image_pcredits = X.iloc[pp]['pcredits']
-
-                if config.USE_CLASSIFIER == True: 
-                    chosen_image_class = X.iloc[pp]['Image_class']
-                else:
-                    chosen_image_class = 'general'
-
-                repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
-                    list(chosen_image_hashtags),chosen_image_class)
-
-                chosen_image = X.iloc[pp]['Flocation']
-                error = 0
-
-            except:
-                attempts += 1
-
-        if chosen_image == None:
-
-            print("ERROR!")
+            return {'Image':'no_image','Caption':np.nan}
 
         else:
 
-            if debug == True:
+            ranks = X['rank'].values
+            ranks = np.nan_to_num(ranks)
+            ranks = ranks - min(ranks)
 
-                print(repost_comment)
+            #probability of choosing that file to post
+            self.p = ranks/sum(ranks)
 
-                image = mpimg.imread(chosen_image)
-                plt.imshow(image)
-                plt.axis('off')
-                plt.show()
+            attempts = 0
+            error = 1
+            chosen_image = None
 
-        return {'Image':chosen_image,'Caption':repost_comment}
+            while error == 1 and attempts < 10:
 
-    def _rank_posts(self,X,variable='rank') -> pd.DataFrame:
+                #try:
 
-        X.sort_values(by=variable,ascending=False,inplace=True)
+                    #Choose one image from those that have passed the QC stage
 
-        return X
+                    print(self.p,len(X))
+                    print('---------------------')
+                    print(X)
+
+                    pp = np.random.choice(np.arange(len(X)),size=1,replace=True,p=self.p)[0]
+
+                    chosen_image_caption = X.iloc[pp]['repost_comment']
+                    chosen_image_hashtags = X.iloc[pp]['hashtags']
+                    chosen_image_pcredits = X.iloc[pp]['pcredits']
+
+                    if config.USE_CLASSIFIER == True: 
+                        chosen_image_class = X.iloc[pp]['Image_class']
+                    else:
+                        chosen_image_class = 'general'
+
+                    repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
+                        list(chosen_image_hashtags),chosen_image_class)
+
+                    chosen_image = X.iloc[pp]['Flocation']
+                    error = 0
+
+                #except:
+                #    attempts += 1
+
+            if chosen_image == None:
+
+                print("ERROR!")
+
+            else:
+
+                if debug == True:
+
+                    print(repost_comment)
+
+                    image = mpimg.imread(chosen_image)
+                    plt.imshow(image)
+                    plt.axis('off')
+                    plt.show()
+
+            return {'Image':chosen_image,'Caption':repost_comment}
+
 
     def _generate_caption_basic(self,base_caption,credits,hashtags,image_class='general'):
         

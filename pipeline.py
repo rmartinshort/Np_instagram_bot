@@ -29,10 +29,10 @@ if config.USE_CLASSIFIER == True:
 		[
 		('feature_generation',
 			pp.FeatureGenerator()),
-		('caption_construction',
-			pp.CaptionConstructor()),
 		('image_classification',
 		    pp.ContentDetermination()),
+		('caption_construction',
+			pp.CaptionConstructor()),
 		('image_choice',
 			pp.ChoosePost())
 		]

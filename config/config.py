@@ -6,7 +6,7 @@ import pandas as pd
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
-USE_CLASSIFIER = False
+USE_CLASSIFIER = True
 
 #must be in this order!
 IMAGE_CLASSES = ("animals","buildings","landscapes","people")
@@ -42,7 +42,7 @@ COMMENT_WEIGHT = 1
 
 # maxiumum number of images to download from each profile 
 # at a time
-MAX_PROFILE_DL = 5
+MAX_PROFILE_DL = 10
 # number of days in the past from which to scape data. A smaller 
 # number will lead to more 'up to date' posts, but fewer of them
 PAST_DAYS_DL = 14
