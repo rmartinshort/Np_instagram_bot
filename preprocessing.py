@@ -13,6 +13,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from datetime import datetime
+import pickle
 import time
 
 class FeatureGenerator(BaseEstimator, TransformerMixin):
@@ -194,6 +195,40 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
         return X
 
 
+class CaptionTopicModelling(BaseEstimator,TransformerMixin):
+
+    def __init__(self) -> None:
+
+        self.LDA_model = pickle.load(open(config.LDA_MODEL,'rb'))
+        self.CV_model = pickle.load(open(config.CV_MODEL,'rb'))
+        return None
+
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> 'CaptionTopicModelling':
+
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+
+        '''
+        Apply the LDA to classify the captions into one of three topic classes
+        '''
+
+        X = X.copy()
+
+        print("Determining caption topics")
+        t0 = time.time()
+
+        dtm = self.CV_model.transform(X['caption'])
+        topic_probs = self.LDA_model.transform(dtm)
+
+        X['caption_class'] = np.argmax(topic_probs,axis=1)
+
+        t1 = time.time()
+        print(f'Done in {t1-t0} seconds')
+
+        return X 
+
+
 class ContentDetermination(BaseEstimator,TransformerMixin):
 
     '''Load a pretrained CNN (based in vgg16) and classify the images
@@ -255,22 +290,26 @@ class ChoosePost(BaseEstimator, TransformerMixin):
 
     def __init__(self,captions=config.CAPTIONS,tags=config.TAGS) -> None:
 
-        captions_land = captions['landscapes']
-        captions_ani = captions['animals']
-        captions_people = captions['people']
-        captions_build = captions['buildings']
-        captions_general = captions['general']
+        #captions_land = captions['landscapes']
+        #captions_ani = captions['animals']
+        #captions_people = captions['people']
+        #captions_build = captions['buildings']
+        #captions_general = captions['general']
         tags_loc = tags
 
         #one option here would be to determine the topic score of each caption as a four component vector
         #Then choose the caption whose vector is most similar to the vector produced by either the classification
         #algorithm or by topic modelling of the caption of the chosen image.
 
-        self.loaded_comments_land = pd.read_csv(captions_land,sep='\t',names=['caption'])
-        self.loaded_comments_ani = pd.read_csv(captions_ani,sep='\t',names=['caption'])
-        self.loaded_comments_people = pd.read_csv(captions_people,sep='\t',names=['caption'])
-        self.loaded_comments_build = pd.read_csv(captions_build,sep='\t',names=['caption'])
-        self.loaded_comments_general = pd.read_csv(captions_general,sep='\t',names=['caption'])
+        #self.loaded_comments_land = pd.read_csv(captions_land,sep='\t',names=['caption'])
+        #self.loaded_comments_ani = pd.read_csv(captions_ani,sep='\t',names=['caption'])
+        #self.loaded_comments_people = pd.read_csv(captions_people,sep='\t',names=['caption'])
+        #self.loaded_comments_build = pd.read_csv(captions_build,sep='\t',names=['caption'])
+        #self.loaded_comments_general = pd.read_csv(captions_general,sep='\t',names=['caption'])
+
+        self.loaded_comments = pd.read_csv(captions,sep='\t')
+
+        print(self.loaded_comments)
 
         self.loaded_tags = pd.read_csv(tags_loc,names=['tag'])
 
@@ -315,6 +354,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                     chosen_image_caption = X.iloc[pp]['repost_comment']
                     chosen_image_hashtags = X.iloc[pp]['hashtags']
                     chosen_image_pcredits = X.iloc[pp]['pcredits']
+                    chosen_caption_class = X.iloc[pp]['caption_class']
 
                     if config.USE_CLASSIFIER == True: 
                         chosen_image_class = X.iloc[pp]['Image_class']
@@ -322,7 +362,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
                         chosen_image_class = 'general'
 
                     repost_comment = self._generate_caption_basic(chosen_image_caption,list(chosen_image_pcredits),\
-                        list(chosen_image_hashtags),chosen_image_class)
+                        list(chosen_image_hashtags),chosen_image_class,chosen_caption_class)
 
                     chosen_image = X.iloc[pp]['Flocation']
                     error = 0
@@ -348,22 +388,22 @@ class ChoosePost(BaseEstimator, TransformerMixin):
             return {'Image':chosen_image,'Caption':repost_comment}
 
 
-    def _generate_caption_basic(self,base_caption,credits,hashtags,image_class='general'):
+    def _generate_caption_basic(self,base_caption,credits,hashtags,image_class='general',caption_class=0):
         
         """Run this to generate a caption specific to the image that has been chosen"""
 
         if image_class == 'animals':
-            loaded_comments = self.loaded_comments_ani
+            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='animals']
         elif image_class == 'landscapes':
-            loaded_comments = self.loaded_comments_land
+            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='landscapes']
         elif image_class == 'people':
-            loaded_comments = self.loaded_comments_people
+            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='people']
         elif image_class == 'buildings':
-            loaded_comments = self.loaded_comments_build
+            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='buildings']
         else:
-            loaded_comments = self.loaded_comments_general
+            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='general']
         
-        comments_list = list(loaded_comments['caption'])
+        comments_list = list(loaded_comments[loaded_comments['quoteclass']==caption_class]['quote'])
         tags_list = list(self.loaded_tags['tag'])
         
         chosen_caption = np.random.choice(comments_list,size=1)[0]

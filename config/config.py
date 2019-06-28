@@ -22,6 +22,10 @@ if USE_CLASSIFIER == True:
 else:
 	CLASSIFIERPATH = None
 
+#NLP models
+# - count vectorizer and LDA model
+CV_MODEL = MODELS+'/cv_basemodel.pkl'
+LDA_MODEL = MODELS+'/LDA_basemodel.pkl'
 
 #number of hours between posts
 POST_FREQ = 6
@@ -59,11 +63,13 @@ PROFILE_LOGGER = DATASETS+'/profile_log.csv'
 
 PREV_POSTS = DATASETS+'/used_image_files.csv'
 
-CAPTIONS = {'animals':DATASETS+'/captions_list_animals.csv',\
-'buildings':DATASETS+'/captions_list_buildings.csv',\
-'landscapes':DATASETS+'/captions_list_landscapes.csv',\
-'people':DATASETS+'/captions_list_people.csv',\
-'general':DATASETS+'/captions_list.csv'}
+#CAPTIONS = {'animals':DATASETS+'/captions_list_animals.csv',\
+#'buildings':DATASETS+'/captions_list_buildings.csv',\
+#'landscapes':DATASETS+'/captions_list_landscapes.csv',\
+#'people':DATASETS+'/captions_list_people.csv',\
+#'general':DATASETS+'/captions_list.csv'}
+
+CAPTIONS = DATASETS+'/all_captions_with_class.csv'
 
 TAGS = DATASETS+'/tags_list.csv'
 

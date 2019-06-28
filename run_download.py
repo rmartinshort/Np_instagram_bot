@@ -70,9 +70,12 @@ def generate_post(post_meta,post_online=True) -> None:
 	image_caption = post_meta['Caption']
 
 	print(image_file)
-	print(image_caption)
 
-	print(username,password)
+	print('caption: ----- ')
+	print(image_caption)
+	print('--------------')
+
+	#print(username,password)
 
 
 	if post_online == True:
@@ -103,7 +106,7 @@ def download_wrapper() -> None:
 			print('Image inventory empty. Waiting to try again')
 			time.sleep(3600*config.POST_FREQ)
 		else:
-			generate_post(post,post_online=False)
+			generate_post(post,post_online=True)
 			time.sleep(3600*config.POST_FREQ)
 
 

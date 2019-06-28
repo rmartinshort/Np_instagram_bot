@@ -33,6 +33,8 @@ if config.USE_CLASSIFIER == True:
 		    pp.ContentDetermination()),
 		('caption_construction',
 			pp.CaptionConstructor()),
+		('content_classification',
+			pp.CaptionTopicModelling()),
 		('image_choice',
 			pp.ChoosePost())
 		]
