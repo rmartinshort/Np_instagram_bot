@@ -272,7 +272,7 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         self.loaded_comments_build = pd.read_csv(captions_build,sep='\t',names=['caption'])
         self.loaded_comments_general = pd.read_csv(captions_general,sep='\t',names=['caption'])
 
-        self.loaded_tags = pd.read_csv(self.tags_loc,names=['tag'])
+        self.loaded_tags = pd.read_csv(tags_loc,names=['tag'])
 
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None

@@ -214,7 +214,7 @@ class PackMetadata():
                         post_metadata['caption'].append(metadata_list[1])
                         post_metadata['postdate'].append(metadata_list[3])
                         post_metadata['timesincepost'].append(metadata_list[4])
-                        post_metadata['nlikes'].append(metadata_list[5])ßß
+                        post_metadata['nlikes'].append(metadata_list[5])
                         post_metadata['ncomments'].append(metadata_list[6])
                         post_metadata['nfollowers'].append(metadata_list[7])
                         post_metadata['nlikes_per_follower'].append(metadata_list[8])

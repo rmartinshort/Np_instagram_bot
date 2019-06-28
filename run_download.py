@@ -103,7 +103,7 @@ def download_wrapper() -> None:
 			print('Image inventory empty. Waiting to try again')
 			time.sleep(3600*config.POST_FREQ)
 		else:
-			generate_post(post,post_online=True)
+			generate_post(post,post_online=False)
 			time.sleep(3600*config.POST_FREQ)
 
 

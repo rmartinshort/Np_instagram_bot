@@ -24,7 +24,7 @@ else:
 
 
 #number of hours between posts
-POST_FREQ = 7
+POST_FREQ = 6
 #number of hours between logging attempts
 LOG_FREQ = 1
 
@@ -42,7 +42,7 @@ COMMENT_WEIGHT = 1
 
 # maxiumum number of images to download from each profile 
 # at a time
-MAX_PROFILE_DL = 10
+MAX_PROFILE_DL = 5
 # number of days in the past from which to scape data. A smaller 
 # number will lead to more 'up to date' posts, but fewer of them
 PAST_DAYS_DL = 14
