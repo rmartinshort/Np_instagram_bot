@@ -56,7 +56,11 @@ class FeatureGenerator(BaseEstimator, TransformerMixin):
         def __image_size_check(image_loc) -> float:
 
             image = mpimg.imread(image_loc)
-            (h,w,n) = image.shape
+
+            try:
+            	(h,w,n) = image.shape
+            except:
+            	return np.nan
             if w < 800:
                 return np.nan
             else:

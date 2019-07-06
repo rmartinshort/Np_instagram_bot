@@ -75,12 +75,13 @@ def generate_post(post_meta,post_online=True) -> None:
 	print(image_caption)
 	print('--------------')
 
-	#print(username,password)
+	print(username,password)
 
 
 	if post_online == True:
 
 		with client(username, password, write_cookie_file=True) as cli:
+			print(cli)
 			cli.upload(image_file, image_caption)
 
 	used_image_file = open(config.PREV_POSTS,'a')
