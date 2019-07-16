@@ -90,26 +90,44 @@ def generate_post(post_meta,post_online=True) -> None:
 	os.remove(image_file)
 
 
-def download_wrapper() -> None:
+def download_wrapper(error_check=False) -> None:
 
 	'''For automated downloads'''
 
 	while True:
 
-		run_remove_posts()
-		run_extract_stats()
-		run_download()
-		post = choose_post()
+		if error_check == True:
 
-		print(post)
+			try:
 
-		if post['Image'] == "no_image":
-			print('Image inventory empty. Waiting to try again')
-			time.sleep(3600*config.POST_FREQ)
+				_download_loop()
+
+			except:
+
+				print('Something went wrong while assembling the next post! This should not happen! Waiting \
+					while to try again')
+				time.sleep(3600*config.POST_FREQ/8)
+
 		else:
-			generate_post(post,post_online=True)
-			time.sleep(3600*config.POST_FREQ)
 
+			_download_loop()
+
+
+def _download_loop() -> None:
+
+	run_remove_posts()
+	run_extract_stats()
+	run_download()
+	post = choose_post()
+
+	print(post)
+
+	if post['Image'] == "no_image":
+		print('Image inventory empty. Waiting to try again')
+		time.sleep(3600*config.POST_FREQ)
+	else:
+		generate_post(post,post_online=True)
+		time.sleep(3600*config.POST_FREQ)
 
 
 
@@ -128,4 +146,4 @@ if __name__ == '__main__':
 	#generate_post(post,post_online=False)
 
 	#For use 
-	download_wrapper()
+	download_wrapper(error_check=True)
