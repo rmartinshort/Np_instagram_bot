@@ -9,6 +9,7 @@ import os
 from datetime import datetime, timedelta
 from sklearn.base import BaseEstimator, TransformerMixin
 from config import config
+import shutil
 
 class RemoveOldPosts():
 
@@ -47,7 +48,7 @@ class RemoveOldPosts():
                 post_image_name = post_name+'.jpg'
                 
                 if os.path.isfile(post_image_name):
-                     
+
                     metadata = instaloader.load_structure_from_file(context=self.L.context,\
                         filename=postmeta)
 
@@ -57,12 +58,12 @@ class RemoveOldPosts():
                     post_age = self.now - postdate
                     if post_age.days > self.pastdays:
                         for f in glob.glob(f"{post_name}*"):
-                            print(f'Deleting {f}: Post outdated')
+                            #print(f'Deleting {f}: Post outdated')
                             os.remove(f)
 
     def _remove_old_posts(self) -> None:
 
-        print(self.prev_posts)
+        '''Remove image files that are known to have already been posted'''
 
         for image_file in self.prev_posts:
 
@@ -78,10 +79,11 @@ class RemoveOldPosts():
 
 
 class DownloadNewPosts():
+
     """Connect to Instagram and get post data from specified profiles"""
 
     def __init__(self, profile_list=config.PROFILES_TO_DOWNLOAD,\
-        download_dir=config.DATASETS,maxdownloadsperprofile=config.MAX_PROFILE_DL,pastdays=config.PAST_DAYS_DL) -> None:
+        download_dir=config.DATASETS,maxdownloadsperprofile=config.MAX_PROFILE_DL,pastdays=config.PAST_DAYS_DL,repo=config.POSTS) -> None:
 
         self.profile_list = pd.read_csv(profile_list,names=['profile_name','profile_id'])
         self.profile_list = list(self.profile_list['profile_id'])
@@ -89,6 +91,7 @@ class DownloadNewPosts():
         self.maxdownloadsperprofile = maxdownloadsperprofile
         self.pastdays = pastdays
         self.L = instaloader.Instaloader(quiet=True)
+        self.repo = repo
 
     def download(self) -> None:
         """Do the download across all profiles"""
@@ -96,6 +99,8 @@ class DownloadNewPosts():
         for id_number in self.profile_list:
 
             self._download_recent_posts(id_number)
+
+        self._move_to_repo()
 
     def _download_recent_posts(self,profile_id) -> None:
         """For downloading insta posts from one profile"""
@@ -119,18 +124,59 @@ class DownloadNewPosts():
             else:
                 break
 
-        del posts
+    def _move_to_repo(self) -> None:
+
+        '''Generate a repository that contains material to be considered for posting'''
+
+        #regenerate the repo directory. This is needed so that the system does not post the duplicate files
+
+        print("Removing and remaking post database")
+
+        try:
+            shutil.rmtree(self.repo)
+            os.mkdir(self.repo)
+        except:
+            print('Cannnot remove repo at the present time - it is likely being used by another script')
+
+        for profileid in self.profile_list:
+
+            posts_data = glob.glob(f'{profileid}/*.json.xz')
+            
+            for postmeta in posts_data:
+                
+                post_name = postmeta.split('.')[0]
+                post_image_name = post_name+'.jpg'
+
+                print(post_image_name)
+                
+                if os.path.isfile(post_image_name):
+
+                    post_meta_name_new = self.repo + '/' + str(profileid) + '_' + postmeta.split('/')[1]
+                    post_image_name_new = self.repo + '/' + str(profileid) + '_' + post_image_name.split('/')[1]
+
+                    print(post_image_name,post_image_name_new)
+                    print(postmeta,post_meta_name_new)
+
+                    print('moving files')
+                    os.system('mv %s %s' %(post_image_name,post_image_name_new))
+                    os.system('mv %s %s' %(postmeta,post_meta_name_new))
+
+                else:
+
+                    print('file not found')
+
+
+
 
 class PackMetadata():
 
     """Generate a dataframe containing metadata of the desired posts"""
 
-    def __init__(self,profile_list=config.PROFILES_TO_DOWNLOAD,prev_posts=config.PREV_POSTS,download_dir=config.DATASETS) -> None:
+    def __init__(self,download_dir=config.DATASETS,repo=config.POSTS,prev_posts=config.PREV_POSTS) -> None:
 
         self.download_dir = download_dir
+        self.repo = repo
         self.L = instaloader.Instaloader(quiet=True)
-        profiles = pd.read_csv(profile_list,names=['profile_name','profile_id'])
-        self.profiles = list(profiles['profile_id'])
         self.used_files = prev_posts
 
     def _get_metadata(self,metadatafile) -> None:
@@ -141,18 +187,6 @@ class PackMetadata():
             postdate = metadatafile.date
             time_since_postdate = datetime.now() - postdate
             nlikes = metadatafile.likes
-
-            # try:
-            #     location_name = metadatafile.location.name
-            # except:
-            #     location_name = 'None'
-
-            # try:
-            #     location_lat = metadatafile.location.lat
-            #     location_lon = metadatafile.location.lng
-            # except:
-            #     location_lon = 'None'
-            #     location_lat = 'None'
 
             ncomments = metadatafile.comments
             nfollowers = metadatafile.owner_profile.followers
@@ -166,9 +200,9 @@ class PackMetadata():
 
     def process_posts(self,debug=False) -> pd.DataFrame:
 
-        #Read previous posts so that we don't post the same file multiple times
-        prev_posts = pd.read_csv(self.used_files,names=['Name','Date'])
-        self.prev_posts = list(prev_posts['Name'])
+        prev_posts = pd.read_csv(self.used_files,names=['filename','post_date'])
+        self.prev_posts = list(prev_posts['filename'])
+
         
         post_metadata = {
             'Flocation':[],
@@ -183,42 +217,42 @@ class PackMetadata():
             'ncomments_per_follower':[]
         }
 
-        for profileid in self.profiles:
+        #Get all metadata from the repo
 
-            posts_data = glob.glob(f'{profileid}/*.json.xz')
+        allmeta = glob.glob(self.repo+'/*.json.xz')
+
+        for postmeta in allmeta:
             
-            for postmeta in posts_data:
+            post_name = postmeta.split('.')[0]
+            post_image_name = post_name+'.jpg'
+            
+            if os.path.isfile(post_image_name) and post_image_name not in prev_posts:
                 
-                post_name = postmeta.split('.')[0]
-                post_image_name = post_name+'.jpg'
+                print(f'Found post {postmeta}')
                 
-                if os.path.isfile(post_image_name) and post_image_name not in self.prev_posts:
+                if debug == True:
+                    post_image = mpimg.imread(post_image_name)
+                    plt.imshow(post_image)
+                    plt.show()
                     
-                    print(f'Found post {postmeta}')
-                    
-                    if debug == True:
-                        post_image = mpimg.imread(post_image_name)
-                        plt.imshow(post_image)
-                        plt.show()
-                        
-                    metadata = instaloader.load_structure_from_file(context=self.L.context,\
-                        filename=postmeta)
-                    
-                    #metadata that is useful to us
-                    metadata_list = self._get_metadata(metadata)
-                    
-                    if metadata_list:
-                    
-                        post_metadata['Flocation'].append(post_image_name)
-                        post_metadata['credits'].append(metadata_list[0])
-                        post_metadata['caption'].append(metadata_list[1])
-                        post_metadata['postdate'].append(metadata_list[3])
-                        post_metadata['timesincepost'].append(metadata_list[4])
-                        post_metadata['nlikes'].append(metadata_list[5])
-                        post_metadata['ncomments'].append(metadata_list[6])
-                        post_metadata['nfollowers'].append(metadata_list[7])
-                        post_metadata['nlikes_per_follower'].append(metadata_list[8])
-                        post_metadata['ncomments_per_follower'].append(metadata_list[9])
+                metadata = instaloader.load_structure_from_file(context=self.L.context,\
+                    filename=postmeta)
+                
+                #metadata that is useful to us
+                metadata_list = self._get_metadata(metadata)
+                
+                if metadata_list:
+                
+                    post_metadata['Flocation'].append(post_image_name)
+                    post_metadata['credits'].append(metadata_list[0])
+                    post_metadata['caption'].append(metadata_list[1])
+                    post_metadata['postdate'].append(metadata_list[3])
+                    post_metadata['timesincepost'].append(metadata_list[4])
+                    post_metadata['nlikes'].append(metadata_list[5])
+                    post_metadata['ncomments'].append(metadata_list[6])
+                    post_metadata['nfollowers'].append(metadata_list[7])
+                    post_metadata['nlikes_per_follower'].append(metadata_list[8])
+                    post_metadata['ncomments_per_follower'].append(metadata_list[9])
                         
             
         return pd.DataFrame(post_metadata)

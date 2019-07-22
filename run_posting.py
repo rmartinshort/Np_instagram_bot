@@ -10,6 +10,7 @@ import time
 from config import config
 import numpy as np
 
+
 def run_extract_stats() -> None:
 
 	'''Get the latest stats on the accounts we want to download from'''
@@ -17,30 +18,6 @@ def run_extract_stats() -> None:
 	pipeline.profiles_pipe.download()
 
 	print("Done extract stats")
-
-def run_remove_posts() -> None:
-
-	'''Remove old posts from the database'''
-
-	pipeline.remove_pipe.removeoldposts()
-
-	print("Done remove old posts")
-
-def run_download() -> None:
-
-	t0 = time.time()
-
-	pipeline.download_pipe.download()
-
-	print("Done download")
-
-	t1 = time.time()
-
-	print(f'Time taken: {t1-t0} seconds')
-
-	#Delete any prevously posted files that still exist in the repo
-
-	pipeline.remove_pipe.removepreviousposts()
 
 def choose_post() -> dict:
 
@@ -50,15 +27,21 @@ def choose_post() -> dict:
 	#X is a dataframe containing the metadata for each of the downloaded posts, ready for processing
 	X = pipeline.metadata_gen.process_posts()
 
-	#This processing pipeline will produce the file that we want to repost and its
-	#associated caption and credits
+	if X.shape[0] < 2:
 
-	result = pipeline.process_pipe.fit_transform(X)
-	#result = pipeline.process_pipe.transform(X)
-	
-	return result
+		return {'Image':'no_image','Caption':np.nan}
 
-def generate_post(post_meta,post_online=True) -> None:
+	else:
+
+		#This processing pipeline will produce the file that we want to repost and its
+		#associated caption and credits
+
+		result = pipeline.process_pipe.fit_transform(X)
+		#result = pipeline.process_pipe.transform(X)
+		
+		return result
+
+def generate_post(post_meta,post_online=False) -> None:
 
 	'''This uploads a selected image and caption to instagram'''
 
@@ -84,9 +67,12 @@ def generate_post(post_meta,post_online=True) -> None:
 			print(cli)
 			cli.upload(image_file, image_caption)
 
+	#append to previous posts 
 	used_image_file = open(config.PREV_POSTS,'a')
 	used_image_file.write(f"{image_file},{datetime.now()}\n")
 	used_image_file.close()
+
+	#remove the image file so that it can't be included in the next round of image collection
 	os.remove(image_file)
 
 
@@ -100,34 +86,31 @@ def download_wrapper(error_check=False) -> None:
 
 			try:
 
-				_download_loop()
+				_postloop()
 
 			except:
 
-				print('Something went wrong while assembling the next post! This should not happen! Waiting \
-					while to try again')
+				print('Something went wrong while assembling the next post! This should not happen! Waiting a while to try again')
 				time.sleep(3600*config.POST_FREQ/8)
 
 		else:
 
-			_download_loop()
+			_postloop()
 
 
-def _download_loop() -> None:
+def _postloop() -> None:
 
-	run_remove_posts()
 	run_extract_stats()
-	run_download()
 	post = choose_post()
 
 	print(post)
 
 	if post['Image'] == "no_image":
-		print('Image inventory empty. Waiting to try again')
-		time.sleep(3600*config.POST_FREQ)
+		print('Image inventory empty. Waiting for a new download cycle to try again')
+		time.sleep(1*config.POST_FREQ)
 	else:
-		generate_post(post,post_online=True)
-		time.sleep(3600*config.POST_FREQ)
+		generate_post(post,post_online=False)
+		time.sleep(1*config.POST_FREQ)
 
 
 
@@ -146,4 +129,4 @@ if __name__ == '__main__':
 	#generate_post(post,post_online=False)
 
 	#For use 
-	download_wrapper(error_check=True)
+	download_wrapper(error_check=False)

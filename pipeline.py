@@ -10,12 +10,6 @@ from config import config
 #download the profiles
 profiles_pipe = pm.ExtractParkStats()
 
-#remove old posts
-remove_pipe = dd.RemoveOldPosts()
-
-#download the posts
-download_pipe = dd.DownloadNewPosts()
-
 #metadata generation
 metadata_gen = dd.PackMetadata()
 

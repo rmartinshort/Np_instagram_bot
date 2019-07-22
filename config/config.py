@@ -6,16 +6,21 @@ import pandas as pd
 
 #Do we want to use a pretrained classifier
 #right now it determines people, animals, landscapes and buildings
-USE_CLASSIFIER = False
+USE_CLASSIFIER = True
 
 #must be in this order!
 IMAGE_CLASSES = ("animals","buildings","landscapes","people")
 
+#Will not work when a crontab is used!
 current_dir = os.getcwd()
 PACKAGE_ROOT = current_dir
 DATASETS = PACKAGE_ROOT+'/data'
 MODELS = PACKAGE_ROOT+'/classifiers'
+POSTS = PACKAGE_ROOT+'/post_database'
 
+#Ensure this important folder exists
+if not os.path.isdir(POSTS):
+	os.mkdir(POSTS)
 
 if USE_CLASSIFIER == True:
 	CLASSIFIERPATH = MODELS+'/NP_insta_model_v1.pkl'
@@ -31,6 +36,8 @@ LDA_MODEL = MODELS+'/LDA_basemodel.pkl'
 POST_FREQ = 6
 #number of hours between logging attempts
 LOG_FREQ = 1
+#number of hours between download attempts
+DL_FREQ = 24
 
 #profiles to download from
 PROFILES_TO_DOWNLOAD = DATASETS+'/national_park_instaids.csv'
@@ -39,6 +46,7 @@ BASIC_PROFILES = DATASETS+'/national_park_instaids_other.csv'
 if USE_CLASSIFIER == False:
 	PROFILES_TO_DOWNLOAD = BASIC_PROFILES
 	POST_FREQ = 24
+	DL_FREQ = 48
 
 #weightings for generating the image ranks
 LIKES_WEIGHT = 1
@@ -46,10 +54,10 @@ COMMENT_WEIGHT = 1
 
 # maxiumum number of images to download from each profile 
 # at a time
-MAX_PROFILE_DL = 5
+MAX_PROFILE_DL = 10
 # number of days in the past from which to scape data. A smaller 
 # number will lead to more 'up to date' posts, but fewer of them
-PAST_DAYS_DL = 14
+PAST_DAYS_DL = 7
 
 #list of features that we expect to be created by FeatureGenerator
 GENERATED_FEATURES = ['credits','nlikes','ncomments','nfollowers','nlikes_per_follower','ncomments_per_follower']
@@ -62,6 +70,11 @@ HASHTAG_QC = ['monday','tuesday','wednesday','thursday','friday','saturday','sun
 PROFILE_LOGGER = DATASETS+'/profile_log.csv'
 
 PREV_POSTS = DATASETS+'/used_image_files.csv'
+
+#Generate this important file if it doesn't already exist
+if not os.path.exists(PREV_POSTS):
+
+	os.system('touch %s' %PREV_POSTS)
 
 #CAPTIONS = {'animals':DATASETS+'/captions_list_animals.csv',\
 #'buildings':DATASETS+'/captions_list_buildings.csv',\
