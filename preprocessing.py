@@ -171,7 +171,13 @@ class CaptionConstructor(BaseEstimator,TransformerMixin):
             caption = row['caption']
             date = row['postdate']
             credit = row['credits']
-            a = re.split("[.!]+", caption)[0]+'!'
+            a = re.split("[.!]+", caption)[0]
+            
+            if a[-1] == '?':
+                a[-1] == '!'
+            else:
+                a = a+'!'
+
             a = re.sub('[@$""'']', '', a)
             
             post_date = f"{date.month:02d}-{date.day:02d}-{date.year}"
@@ -245,7 +251,7 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> 'ContentDetermination':
 
-        self.mymodel = torch.load(config.CLASSIFIERPATH)
+        self.mymodel = torch.load(config.CLASSIFIERPATH,map_location='cpu')
 
 
         self.transform_validation = transforms.Compose([transforms.Resize((224,224)),
@@ -275,14 +281,16 @@ class ContentDetermination(BaseEstimator,TransformerMixin):
             
             classification = self.classes[preds.item()]
             
-            #We don't really want images of people, so remove them (replace with nan, which will be removed later)
+            #We don't really want images of things that are not animals or landscapes so remove them (replace with nan, which will be removed later)
             
-            if classification == 'people':
+            if classification == 'other':
                 classifications.append(np.nan)
             else:
                 classifications.append(classification)
 
         X['Image_class'] = classifications
+        X.dropna(inplace=True)
+        X.reset_index(inplace=True)
         t1 = time.time()
         print(f'Done in {t1-t0} seconds')
 
@@ -311,9 +319,8 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         #self.loaded_comments_build = pd.read_csv(captions_build,sep='\t',names=['caption'])
         #self.loaded_comments_general = pd.read_csv(captions_general,sep='\t',names=['caption'])
 
+        #load possible captions 
         self.loaded_comments = pd.read_csv(captions,sep='\t')
-
-        print(self.loaded_comments)
 
         self.loaded_tags = pd.read_csv(tags_loc,names=['tag'])
 
@@ -396,14 +403,21 @@ class ChoosePost(BaseEstimator, TransformerMixin):
         
         """Run this to generate a caption specific to the image that has been chosen"""
 
-        if image_class == 'animals':
+        # if image_class == 'animals':
+        #     loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='animals']
+        # elif image_class == 'landscapes':
+        #     loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='landscapes']
+        # elif image_class == 'people':
+        #     loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='people']
+        # elif image_class == 'buildings':
+        #     loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='buildings']
+        # else:
+        #     loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='general']
+
+        if image_class == 'wildlife':
             loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='animals']
         elif image_class == 'landscapes':
             loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='landscapes']
-        elif image_class == 'people':
-            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='people']
-        elif image_class == 'buildings':
-            loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='buildings']
         else:
             loaded_comments = self.loaded_comments[self.loaded_comments['imageclass']=='general']
         

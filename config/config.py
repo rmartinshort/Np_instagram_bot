@@ -9,7 +9,12 @@ import pandas as pd
 USE_CLASSIFIER = True
 
 #must be in this order!
-IMAGE_CLASSES = ("animals","buildings","landscapes","people")
+
+#For old model (V1)
+#IMAGE_CLASSES = ("animals","buildings","landscapes","people")
+
+#For new model (V2)
+IMAGE_CLASSES = ("landscapes","other","wildlife")
 
 #Will not work when a crontab is used!
 current_dir = os.getcwd()
@@ -23,7 +28,8 @@ if not os.path.isdir(POSTS):
 	os.mkdir(POSTS)
 
 if USE_CLASSIFIER == True:
-	CLASSIFIERPATH = MODELS+'/NP_insta_model_v1.pkl'
+	#CLASSIFIERPATH = MODELS+'/NP_insta_model_v1.pkl'
+	CLASSIFIERPATH = MODELS+'/NP_insta_model_v2.pkl'
 else:
 	CLASSIFIERPATH = None
 

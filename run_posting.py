@@ -76,7 +76,7 @@ def generate_post(post_meta,post_online=False) -> None:
 	os.remove(image_file)
 
 
-def download_wrapper(error_check=False) -> None:
+def posting_wrapper(error_check=False) -> None:
 
 	'''For automated downloads'''
 
@@ -129,4 +129,4 @@ if __name__ == '__main__':
 	#generate_post(post,post_online=False)
 
 	#For use 
-	download_wrapper(error_check=False)
+	posting_wrapper(error_check=False)
