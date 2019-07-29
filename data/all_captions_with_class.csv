@@ -1,15 +1,15 @@
 quote	quoteclass	imageclass
-Whats your favorite national park?	1	general
+Whats your favorite national park?	0	general
 How many national parks have you visted? Tell us in the comments!	1	general
 We're planning a roadtrip! Which national parks should we visit?	1	general
 Whats the best time of year to visit your favorite national park?	1	general
 Where should we go next?	0	general
 What landscapes most inspire you? Tell us and we'll include more of them!	1	general
 Some trivia: In which US national park can you find North America's highest mountain?	1	general
-The world is big and I want to have a good look at it before it gets dark. - John Muir	0	general
+The world is big and I want to have a good look at it before it gets dark. - John Muir	1	general
 In every walk with Nature one receives far more than he seeks. - John Muir	1	general
 Which national parks are on your bucket list?	1	general
-None of Nature’s landscapes are ugly so long as they are wild. - John Muir	2	general
+None of Nature’s landscapes are ugly so long as they are wild. - John Muir	0	general
 Some say national parks were America's greatest idea...	1	general
 Keep close to Nature's heart... and break clear away, once in a while, and climb a mountain or spend a week in the woods. Wash your spirit clean. - John Muir	2	general
 Wilderness is a place for more than recreation. Its where are are best able to contemplate out place in the world.	1	general
@@ -26,6 +26,14 @@ Twenty years from now you will be more disappointed by the things you didn't do 
 Not all those who wander are lost. - J.R.R. Tolkien	0	general
 I haven't been everywhere, but it's on my list. - Susan Sontag	2	general
 For my part, I travel not to go anywhere, but to go. I travel for travel's sake. The great affair is to move. - Robert Louis Stevenson	1	general
+Theres a wide world out there	0	general
+Visit the US's natural parks to wonder at the natural world!	0	general
+A national park is not a playground. It's a sanctuary for nature and for humans who will accept nature on nature's own terms - Michael Frome	0	general
+One touch of nature makes the whole world kin - William Shakespeare	1	general
+Look deep into nature, and then you will understand everything better - Albert Einstein	0	general
+In nature, nothing is perfect and everything is perfect. Trees can be contorted, bent in weird ways, and they're still beautiful - Alice Walker	1	general
+Earth and sky, woods and fields, lakes and rivers, the mountain and the sea, are excellent schoolmasters, and teach some of us more than we can ever learn from books. - John Lubbock	1	general
+One of the first conditions of happiness is that the link between Man and Nature shall not be broken. - Leo Tolstoy	1	general
 Whenever we encounter wild animals in nature, we must only ever show kindness and compassion. - Paul Oxton	1	animals
 The earth laughs in flowers. - Ralph Waldo Emerson	2	animals
 Tag a friend who loves wildlife!	0	animals
@@ -81,9 +89,12 @@ Collect moments and memories, not things - Anonymous	2	landscapes
 When you least expect it, the great adventure finds you - Anonymous 	2	landscapes
 Life is like a landscape. You live in the midst of it but can describe it only from the vantage point of distance. - Charles Lindbergh 	0	landscapes
 Any landscape is a condition of the spirit. - Henri Frederic Amiel 	0	landscapes
-“The clearest way into the Universe is through a forest wilderness.” - John Muir	1	landscapes
-“If Music is a Place -- then Jazz is the City, Folk is the Wilderness, Rock is the Road, Classical is a Temple.” - Vera Nazarian	0	landscapes
-“Like music and art, love of nature is a common language that can transcend political or social boundaries.” - Jimmy Carter	1	landscapes
+The clearest way into the Universe is through a forest wilderness. - John Muir	1	landscapes
+If Music is a Place -- then Jazz is the City, Folk is the Wilderness, Rock is the Road, Classical is a Temple. - Vera Nazarian	0	landscapes
+Like music and art, love of nature is a common language that can transcend political or social boundaries. - Jimmy Carter	1	landscapes
+Tell us about an inspirational landscape you've visited recently!	2	landscapes
+"Have you heard of the ""overview effect""? Something similar is said to happen to people experiencing the natural world"	0	landscapes
+Spending some time in the natural world once in a while might help you focus in on who you are and what you want in life	1	landscapes
 Did you know that that the National Park Service employs almost 30,000 people?	1	people
 National park staff are employed to protect, manage and care for the nation's wild spaces.	1	people
 A park ranger is a protector. You protect the land from the people, the people from the land, the people from each other, and the people from themselves. It's what you are trained to do without even thinking, a reflexive and unconditional act. - Kurt Caswell 	1	people
