@@ -12,11 +12,14 @@ class ExtractParkStats():
 
     """Get useful information about each of the park instagram pages"""
 
-    def __init__(self, profile_list=config.PROFILES_TO_DOWNLOAD,download_dir=config.DATASETS,logfile=config.PROFILE_LOGGER) -> None:
+    def __init__(self, profile_list=config.PROFILES_TO_DOWNLOAD,download_dir=config.DATASETS,\
+        logfile=config.PROFILE_LOGGER,username=config.INSTA_UNAME,password=config.INSTA_PASS) -> None:
 
         self.profiles = pd.read_csv(profile_list,names=['profile_name','profile_id'])
         self.download_dir = download_dir
         self.logfilename = logfile
+        self.username = username
+        self.password = password
         self.L = instaloader.Instaloader(quiet=True)
 
         if os.path.isfile(logfile):
@@ -27,6 +30,8 @@ class ExtractParkStats():
 
     def download(self) -> None:
         """Do the download across all profiles"""
+
+        self.L.login(user=self.username,passwd=self.password)
 
         current_data = self._profile_information()
 

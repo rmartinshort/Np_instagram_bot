@@ -63,9 +63,11 @@ def generate_post(post_meta,post_online=False) -> None:
 
 	if post_online == True:
 
-		with client(username, password, write_cookie_file=True) as cli:
-			print(cli)
-			cli.upload(image_file, image_caption)
+		with client(username, password, write_cookie_file=False) as cli:
+			try:
+				cli.upload(image_file, image_caption)
+			except:
+				print('Issue: unable to upload at this time!')
 
 	#append to previous posts 
 	used_image_file = open(config.PREV_POSTS,'a')
@@ -99,8 +101,8 @@ def posting_wrapper(error_check=False) -> None:
 
 
 def _postloop() -> None:
-
-	run_extract_stats()
+    
+        #run_extract_stats()
 	post = choose_post()
 
 	print(post)
@@ -109,7 +111,7 @@ def _postloop() -> None:
 		print('Image inventory empty. Waiting for a new download cycle to try again')
 		time.sleep(1*config.POST_FREQ)
 	else:
-		generate_post(post,post_online=False)
+		generate_post(post,post_online=True)
 		time.sleep(1*config.POST_FREQ)
 
 
