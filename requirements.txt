@@ -11,4 +11,4 @@ instapy-chromedriver==2.46
 instapy-cli==0.0.12
 torch==1.1.0
 torchvision==0.3.0
-Pillow==5.4.1
+Pillow==8.3.2
